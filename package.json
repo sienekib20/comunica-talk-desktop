@@ -102,7 +102,7 @@
     "postcss": "8.5.23",
     "sass": "^1.104.0",
     "sass-loader": "^17.0.1",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vue-loader": "^17.4.2",
     "vue-tsc": "^3.3.11",
     "webpack": "^5.110.3",
