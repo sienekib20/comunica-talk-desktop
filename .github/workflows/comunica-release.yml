@@ -57,6 +57,10 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
+      # The lock file needs npm 11, which Node 22 does not ship with
+      - name: Use npm 11
+        run: npm install --global npm@11
+
       - name: Install dependencies
         run: npm ci
 
