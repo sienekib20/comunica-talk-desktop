@@ -27,16 +27,22 @@ jobs:
         include:
           - os: macos-latest
             name: macOS
+            # appdmg uses util.isDate, removed in Node 23, so the DMG needs an older Node
+            node: 22
             build: npm run build:mac:arm64
             package: npm run package:mac:arm64
           - os: windows-latest
             name: Windows
+            node: 24
             build: npm run build:windows:x64
-            package: npm run package:windows:x64
+            # Only the one-click installer: the MSI needs the WiX toolset
+            package: npm run package:windows:x64:exe
           - os: ubuntu-latest
             name: Linux
+            node: 24
             build: npm run build:linux
-            package: npm run package:linux
+            # Only the archive: the Flatpak needs a runtime that the runner lacks
+            package: npx electron-forge make --skip-package --platform=linux --targets=@electron-forge/maker-zip
 
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -48,19 +54,8 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          # The version this app is developed against. Newer versions break the
-          # macOS installer: appdmg relies on util.isDate, removed after Node 24.
-          node-version: 24
+          node-version: ${{ matrix.node }}
           cache: npm
-
-      # The Linux installer is a Flatpak, which needs the builder and a runtime
-      - name: Install Flatpak tooling
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder elfutils
-          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 
       - name: Install dependencies
         run: npm ci
