@@ -1,0 +1,105 @@
+# SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: MIT
+#
+# Builds the Comunica.gov.ao installers for macOS, Windows and Linux
+# and publishes them as a GitHub release.
+#
+# Run it by pushing a tag: git tag v2.3.2 && git push github v2.3.2
+# Or from the Actions tab, which produces the files without a release.
+
+name: Comunica.gov.ao release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      # One platform failing should not throw away the others
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            name: macOS
+            build: npm run build:mac:arm64
+            package: npm run package:mac:arm64
+          - os: windows-latest
+            name: Windows
+            build: npm run build:windows:x64
+            package: npm run package:windows:x64
+          - os: ubuntu-latest
+            name: Linux
+            build: npm run build:linux
+            package: npm run package:linux
+
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          # The version this app is developed against. Newer versions break the
+          # macOS installer: appdmg relies on util.isDate, removed after Node 24.
+          node-version: 24
+          cache: npm
+
+      # The Linux installer is a Flatpak, which needs the builder and a runtime
+      - name: Install Flatpak tooling
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder elfutils
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch Nextcloud Talk and finish the setup
+        run: npm run setup
+
+      - name: Build the application
+        run: ${{ matrix.build }}
+
+      - name: Create the installers
+        run: ${{ matrix.package }}
+
+      - name: Collect the installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: comunica-${{ matrix.name }}
+          path: |
+            out/make/**/*.dmg
+            out/make/**/*.exe
+            out/make/**/*.msi
+            out/make/**/*.flatpak
+            out/make/**/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish the release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Collect every platform
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installers/**/*
+          generate_release_notes: true
