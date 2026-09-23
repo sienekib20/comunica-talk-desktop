@@ -1,0 +1,28 @@
+/*!
+ * SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*
+ * Overrides default Nextcloud styles
+ */
+
+#content {
+	margin-top: var(--header-height) !important;
+}
+
+/* Remove Nextcloud header specific focus-visible style */
+#header {
+	.button-vue,
+	[role=button] {
+		&:focus-visible::after {
+			content: none !important;
+		}
+	}
+}
+
+/* HOTFIX: prevent invalid links <a href="#"> used in NcListItem as a button from breaking routing in Vue Router 4 with Hash History
+/ TODO: fix on NcListItem side and use real buttons instead of <a href="#"> */
+a[href="#"] .button-vue__wrapper {
+	pointer-events: none;
+}

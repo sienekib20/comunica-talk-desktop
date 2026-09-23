@@ -1,0 +1,214 @@
+<!--
+  - SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+	* {
+		box-sizing: border-box;
+	}
+
+	html,
+	body {
+		padding: 0;
+		margin: 0;
+		height: 100vh;
+		background: transparent;
+		color: #fff;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+		user-select: none;
+		-webkit-app-region: drag;
+		overflow: hidden;
+	}
+
+	.lock {
+		position: relative;
+		height: 100vh;
+		border-radius: 20px;
+		overflow: hidden;
+		background:
+			radial-gradient(120% 90% at 15% 0%, #4a9de0 0%, transparent 55%),
+			radial-gradient(120% 120% at 100% 100%, #1b5892 0%, transparent 60%),
+			linear-gradient(155deg, #2e70b0 0%, #17497c 100%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 28px;
+		text-align: center;
+	}
+
+	.aura {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(42px);
+		opacity: 0.5;
+		animation: drift 14s ease-in-out infinite alternate;
+	}
+
+	.aura--one {
+		width: 240px;
+		height: 240px;
+		background: #7cc4ff;
+		inset-block-start: -90px;
+		inset-inline-start: -70px;
+	}
+
+	.aura--two {
+		width: 200px;
+		height: 200px;
+		background: #1e63a8;
+		inset-block-end: -70px;
+		inset-inline-end: -60px;
+		animation-delay: -6s;
+	}
+
+	@keyframes drift {
+		from {
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+		to {
+			transform: translate3d(20px, -16px, 0) scale(1.1);
+		}
+	}
+
+	.content {
+		position: relative;
+		width: 100%;
+		max-width: 300px;
+		-webkit-app-region: no-drag;
+	}
+
+	.logo {
+		width: 168px;
+		filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.25));
+	}
+
+	.title {
+		margin: 22px 0 2px;
+		font-size: 17px;
+		font-weight: 600;
+	}
+
+	.user {
+		margin: 0 0 22px;
+		font-size: 13px;
+		opacity: 0.75;
+		overflow-wrap: anywhere;
+	}
+
+	.field {
+		width: 100%;
+		height: 42px;
+		margin-block-end: 10px;
+		padding: 0 14px;
+		border: 2px solid rgba(255, 255, 255, 0.28);
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.12);
+		color: #fff;
+		font-size: 15px;
+		text-align: center;
+		letter-spacing: 0.32em;
+	}
+
+	.field::placeholder {
+		color: rgba(255, 255, 255, 0.6);
+		letter-spacing: normal;
+	}
+
+	.field:focus {
+		outline: none;
+		border-color: #fff;
+		background: rgba(255, 255, 255, 0.18);
+	}
+
+	.button {
+		-webkit-app-region: no-drag;
+		width: 100%;
+		height: 42px;
+		margin-block-start: 4px;
+		border: none;
+		border-radius: 10px;
+		background: #fff;
+		color: #17497c;
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.button:hover {
+		background: #eaf3fb;
+	}
+
+	.button--ghost {
+		background: rgba(255, 255, 255, 0.14);
+		color: #fff;
+	}
+
+	.button--ghost:hover {
+		background: rgba(255, 255, 255, 0.24);
+	}
+
+	.link {
+		-webkit-app-region: no-drag;
+		margin-block-start: 18px;
+		border: none;
+		background: none;
+		color: rgba(255, 255, 255, 0.75);
+		font-size: 12px;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	.link:hover {
+		color: #fff;
+	}
+
+	.error {
+		min-height: 18px;
+		margin-block-start: 8px;
+		color: #ffd9d4;
+		font-size: 12px;
+	}
+
+	.hidden {
+		display: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.aura {
+			animation: none;
+		}
+	}
+	</style>
+</head>
+<body>
+	<div class="lock">
+		<div class="aura aura--one"></div>
+		<div class="aura aura--two"></div>
+
+		<div class="content">
+			<img class="logo" src="<%= require('../../../img/govao-logo.png') %>" alt="" />
+
+			<p class="title" id="title"></p>
+			<p class="user" id="user"></p>
+
+			<form id="form">
+				<input id="code" class="field" type="password" inputmode="numeric" autocomplete="off" />
+				<input id="code-confirm" class="field hidden" type="password" inputmode="numeric" autocomplete="off" />
+				<button id="submit" class="button" type="submit"></button>
+			</form>
+
+			<button id="biometrics" class="button button--ghost hidden" type="button"></button>
+
+			<p class="error" id="error"></p>
+
+			<button id="secondary" class="link" type="button"></button>
+		</div>
+	</div>
+</body>
+</html>

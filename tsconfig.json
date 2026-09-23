@@ -1,0 +1,14 @@
+{
+	"extends": "@vue/tsconfig/tsconfig.json",
+	"include": ["src/**/*.ts", "src/**/*.vue", "build/BuildConfig.types.ts"],
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"allowJs": true,
+		"checkJs": false,
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"strictNullChecks": true,
+		"paths": {
+			"@global-styles/*": ["./resources/server-global-styles/master/*"],
+		},
+	},
+}

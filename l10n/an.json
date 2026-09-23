@@ -1,0 +1,14 @@
+{ "translations": {
+    "Log in" : "Iniciar sesión",
+    "Close" : "Zarrar",
+    "Dismiss" : "Dismiss",
+    "Cancel" : "Cancelar",
+    "Done" : "Feito",
+    "No" : "No",
+    "Yes" : "Si",
+    "Never" : "Nunca",
+    "Back" : "Ta zaga",
+    "Today" : "Hue",
+    "None" : "Denguno"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}

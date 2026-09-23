@@ -1,0 +1,211 @@
+<!--
+  - SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+	* {
+		box-sizing: border-box;
+	}
+
+	html,
+	body {
+		padding: 0;
+		margin: 0;
+		height: 100vh;
+		background: transparent;
+		color: #fff;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+		user-select: none;
+		-webkit-app-region: drag;
+		overflow: hidden;
+	}
+
+	/* The whole splash is one rounded card - the window itself is frameless and transparent */
+	.splash {
+		position: relative;
+		height: 100vh;
+		border-radius: 20px;
+		overflow: hidden;
+		background:
+			radial-gradient(120% 90% at 15% 0%, #4a9de0 0%, transparent 55%),
+			radial-gradient(120% 120% at 100% 100%, #1b5892 0%, transparent 60%),
+			linear-gradient(155deg, #2e70b0 0%, #17497c 100%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* Slowly drifting light blobs give the flat gradient some depth */
+	.aura {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(42px);
+		opacity: 0.55;
+		animation: drift 14s ease-in-out infinite alternate;
+	}
+
+	.aura--one {
+		width: 260px;
+		height: 260px;
+		background: #7cc4ff;
+		inset-block-start: -90px;
+		inset-inline-start: -70px;
+	}
+
+	.aura--two {
+		width: 220px;
+		height: 220px;
+		background: #1e63a8;
+		inset-block-end: -80px;
+		inset-inline-end: -60px;
+		animation-delay: -5s;
+	}
+
+	.aura--three {
+		width: 160px;
+		height: 160px;
+		background: #9fd6ff;
+		inset-block-end: 40px;
+		inset-inline-start: 30px;
+		opacity: 0.25;
+		animation-delay: -9s;
+	}
+
+	@keyframes drift {
+		from {
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+		to {
+			transform: translate3d(24px, -18px, 0) scale(1.12);
+		}
+	}
+
+	.logo {
+		width: 260px;
+		max-width: 68%;
+		filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.28));
+		animation: rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(14px) scale(0.94);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	/* Indeterminate progress - the app is loading, the duration is unknown */
+	.progress {
+		position: relative;
+		width: 148px;
+		height: 3px;
+		margin-block-start: 34px;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.22);
+		overflow: hidden;
+		animation: fade-in 600ms 400ms ease both;
+	}
+
+	.progress::after {
+		content: '';
+		position: absolute;
+		inset-block: 0;
+		inline-size: 45%;
+		border-radius: inherit;
+		background: #fff;
+		animation: slide 1.4s ease-in-out infinite;
+	}
+
+	@keyframes slide {
+		from {
+			inset-inline-start: -45%;
+		}
+		to {
+			inset-inline-start: 100%;
+		}
+	}
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	.footer {
+		position: absolute;
+		inset-block-end: 14px;
+		inset-inline: 0;
+		text-align: center;
+		font-size: 11px;
+		letter-spacing: 0.02em;
+		opacity: 0.65;
+	}
+
+	.quit {
+		-webkit-app-region: no-drag;
+		position: absolute;
+		inset-block-start: 8px;
+		inset-inline-end: 8px;
+		width: 32px;
+		height: 32px;
+		border: none;
+		border-radius: 50%;
+		background: transparent var(--original-icon-close-white) no-repeat center;
+		background-size: 16px;
+		opacity: 0.6;
+		cursor: pointer;
+	}
+
+	.quit:hover {
+		opacity: 1;
+		background-color: rgba(255, 255, 255, 0.16);
+	}
+
+	.quit_mac {
+		inset-inline-start: 8px;
+		inset-inline-end: auto;
+	}
+
+	.hidden {
+		display: none;
+	}
+
+	/* Respect the system setting for users sensitive to motion */
+	@media (prefers-reduced-motion: reduce) {
+		.aura,
+		.logo,
+		.progress,
+		.progress::after {
+			animation: none;
+		}
+	}
+	</style>
+</head>
+<body>
+	<div class="splash">
+		<div class="aura aura--one"></div>
+		<div class="aura aura--two"></div>
+		<div class="aura aura--three"></div>
+
+		<button class="quit hidden" aria-label="Quit" type="button"></button>
+
+		<img class="logo" src="<%= require('../../img/govao-logo.png') %>" alt="" />
+		<div class="progress"></div>
+
+		<div class="footer"></div>
+	</div>
+</body>
+</html>

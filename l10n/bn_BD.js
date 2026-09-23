@@ -1,0 +1,24 @@
+OC.L10N.register(
+    "talk_desktop",
+    {
+    "Server address" : "সার্ভার ঠিকানা",
+    "Log in" : "প্রবেশ",
+    "Close" : "বন্ধ",
+    "Dismiss" : "Dismiss",
+    "Advanced" : "সুচারু",
+    "Cancel" : "বাতিল করুন",
+    "Done" : "শেষ হলো",
+    "Ok" : "তথাস্তু",
+    "No" : "না",
+    "Yes" : "হ্যাঁ",
+    "Always" : "সর্বদা",
+    "Light" : "হাল্কা",
+    "Dark" : "গাঢ়",
+    "Reload" : "পূনরায় লোড কর",
+    "Reset" : "পূণঃনির্ধানণ",
+    "Update" : "পরিবর্ধন",
+    "Quit" : "বন্ধ",
+    "Today" : "আজ",
+    "None" : "কোনটিই নয়"
+},
+"nplurals=2; plural=(n != 1);");

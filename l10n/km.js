@@ -1,0 +1,22 @@
+OC.L10N.register(
+    "talk_desktop",
+    {
+    "Server address" : "អាសយដ្ឋាន​ម៉ាស៊ីន​បម្រើ",
+    "Log in" : "ចូល",
+    "Close" : "បិទ",
+    "Dismiss" : "Dismiss",
+    "Advanced" : "កម្រិត​ខ្ពស់",
+    "Cancel" : "លើកលែង",
+    "Ok" : "ព្រម",
+    "No" : "ទេ",
+    "Yes" : "បាទ ឬចាស",
+    "Always" : "រាល់ពេល",
+    "Light" : "ភ្លឺt",
+    "Dark" : "ងងឹត",
+    "Reload" : "ផ្ទុកឡើងវិញ",
+    "Update" : "ធ្វើ​បច្ចុប្បន្នភាព",
+    "Quit" : "ចាក់ចេញ",
+    "Today" : "ថ្ងៃ​នេះ",
+    "None" : "គ្មាន"
+},
+"nplurals=1; plural=0;");

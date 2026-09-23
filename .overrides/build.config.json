@@ -1,0 +1,8 @@
+{
+	"applicationName": "Comunica.gov.ao",
+	"domain": "https://gov.ao",
+	"enforceDomain": true,
+	"brandColor": "#3880C3",
+	"brandGradient": "linear-gradient(160deg, #2E70B0 0%, #4A92D4 100%)",
+	"brandFontColor": "#FFFFFF"
+}
