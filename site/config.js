@@ -14,7 +14,7 @@ window.DOWNLOADS_CONFIG = {
 	repository: 'sienekib20/comunica-talk-desktop',
 
 	/** Versão publicada, sem o "v" */
-	version: '2.3.5',
+	version: '2.3.6',
 
 	/** Data da publicação, no formato AAAA-MM-DD */
 	releasedAt: '2026-09-24',
