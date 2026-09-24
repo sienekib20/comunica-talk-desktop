@@ -334,10 +334,11 @@
 	const detected = PLATFORMS.find((platform) => platform.match.test(navigator.userAgent))?.key
 
 	/** Ligação para um ficheiro da release, ou null enquanto não houver publicação */
-	function downloadUrl(fileName) {
-		if (!isPublished) {
+	function downloadUrl(file) {
+		if (!isPublished || file.available === false) {
 			return null
 		}
+		const fileName = file.name
 		return `https://github.com/${config.repository}/releases/download/v${config.version}/${encodeURIComponent(fileName)}`
 	}
 
@@ -371,7 +372,7 @@
 				<p class="card__note">${platform.note}</p>
 				<div class="downloads">
 					${files.map((file, index) => {
-						const url = downloadUrl(file.name)
+						const url = downloadUrl(file)
 						const classes = [
 							'download',
 							index === 0 ? 'download--primary' : '',
