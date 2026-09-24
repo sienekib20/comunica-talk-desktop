@@ -22,6 +22,9 @@ const TALK_VERSION = packageJson.talk[CHANNEL === 'dev' ? 'stable' : CHANNEL]
 const TALK_REPOSITORY = 'https://github.com/nextcloud/spreed'
 const TALK_PATH = process.env.TALK_PATH ? resolve(process.env.TALK_PATH) : join(ROOT, 'spreed')
 
+// On Windows npm is a batch file, which execFile cannot run by the bare name
+const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+
 /**
  * Run a command and show its output
  *
@@ -100,7 +103,7 @@ function nameDevelopmentBundle() {
 }
 
 setupTalk()
-run('npm', ['ci', '--prefix', TALK_PATH])
+run(NPM, ['ci', '--prefix', TALK_PATH])
 setupElectron()
 nameDevelopmentBundle()
 
