@@ -26,8 +26,7 @@ window.DOWNLOADS_CONFIG = {
 	 */
 	files: {
 		macos: [
-			{ label: 'Instalador (recomendado, sem Terminal)', name: 'Comunica.gov.ao-macos-arm64.pkg', size: '~150 MB', available: true },
-			{ label: 'Imagem de disco (arrastar para Aplicações)', name: 'Comunica.gov.ao-macos-arm64.dmg', size: '149 MB', available: true },
+			{ label: 'Apple Silicon (M1 e posteriores)', name: 'Comunica.gov.ao-macos-arm64.dmg', size: '149 MB', available: true },
 			{ label: 'Intel', name: 'Comunica.gov.ao-macos-x64.dmg', size: '~150 MB', available: false },
 		],
 		windows: [

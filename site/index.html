@@ -305,14 +305,11 @@
 	<main class="container">
 		<section class="cards" id="cards" aria-label="Transferências"></section>
 
-		<section class="section hidden" id="macos-help">
-			<h2 class="section__title">Depois de instalar no macOS</h2>
+		<section class="section hidden" id="after-download">
+			<h2 class="section__title" id="after-download-title"></h2>
 			<div class="panel">
-				<p style="margin-top:0">
-					Esta versão de testes não tem certificado da Apple. Copie e cole este comando no
-					<strong>Terminal</strong> depois de arrastar a aplicação para a pasta Aplicações:
-				</p>
-				<div class="command">
+				<ol class="steps" id="after-download-steps"></ol>
+				<div class="command hidden" id="command-box">
 					<code id="command-text">xattr -dr com.apple.quarantine "/Applications/Comunica.gov.ao.app"</code>
 					<button class="copy" id="copy-command" type="button">Copiar</button>
 				</div>
@@ -455,16 +452,61 @@
 		document.getElementById('support').textContent = 'Em caso de dificuldade, contacte o suporte informático da sua instituição.'
 	}
 
-	/** Mostra as instruções do macOS assim que alguém transfere a versão de Mac */
-	function setUpMacosHelp() {
-		const help = document.getElementById('macos-help')
+	/** Instruções que aparecem assim que alguém transfere, para o sistema transferido */
+	const AFTER_DOWNLOAD = {
+		macos: {
+			title: 'A seguir, no macOS',
+			needsCommand: true,
+			steps: [
+				'Abra o ficheiro <code>.dmg</code> transferido.',
+				'Arraste o <strong>Comunica.gov.ao</strong> para a pasta <strong>Aplicações</strong>.',
+				'Abra o <strong>Terminal</strong> e execute este comando, necessário enquanto a aplicação não tiver certificado da Apple:',
+			],
+		},
+		windows: {
+			title: 'A seguir, no Windows',
+			needsCommand: false,
+			steps: [
+				'Execute o ficheiro <code>.exe</code> transferido.',
+				'O Windows vai mostrar um aviso do SmartScreen, porque a aplicação ainda não tem certificado.',
+				'Clique em <strong>Mais informações</strong> e depois em <strong>Executar mesmo assim</strong>.',
+				'A instalação não pede privilégios de administrador.',
+			],
+		},
+		linux: {
+			title: 'A seguir, no Linux',
+			needsCommand: false,
+			steps: [
+				'Extraia o ficheiro <code>.zip</code> transferido.',
+				'Entre na pasta extraída e execute o ficheiro <code>Comunica.gov.ao</code>.',
+				'Se não arrancar, dê-lhe permissão de execução: <code>chmod +x Comunica.gov.ao</code>',
+			],
+		},
+	}
+
+	function setUpAfterDownload() {
+		const panel = document.getElementById('after-download')
+		const title = document.getElementById('after-download-title')
+		const steps = document.getElementById('after-download-steps')
+		const commandBox = document.getElementById('command-box')
 
 		document.getElementById('cards').addEventListener('click', (event) => {
 			const link = event.target.closest('a.download')
-			if (link?.href.includes('macos')) {
-				help.classList.remove('hidden')
-				help.scrollIntoView({ behavior: 'smooth', block: 'start' })
+			if (!link) {
+				return
 			}
+
+			const platform = PLATFORMS.find((item) => link.href.includes(item.key))?.key
+			const help = AFTER_DOWNLOAD[platform]
+			if (!help) {
+				return
+			}
+
+			title.textContent = help.title
+			steps.innerHTML = help.steps.map((step) => `<li>${step}</li>`).join('')
+			commandBox.classList.toggle('hidden', !help.needsCommand)
+			panel.classList.remove('hidden')
+			panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
 		})
 
 		document.getElementById('copy-command').addEventListener('click', async (event) => {
@@ -480,7 +522,7 @@
 	renderCards()
 	renderSteps()
 	renderSupport()
-	setUpMacosHelp()
+	setUpAfterDownload()
 	</script>
 </body>
 </html>
