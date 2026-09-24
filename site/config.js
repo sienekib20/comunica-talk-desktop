@@ -30,7 +30,7 @@ window.DOWNLOADS_CONFIG = {
 			{ label: 'Intel', name: 'Comunica.gov.ao-macos-x64.dmg', size: '~150 MB', available: false },
 		],
 		windows: [
-			{ label: 'Instalador', name: 'Comunica.gov.ao-windows-x64.exe', size: '~150 MB', available: false },
+			{ label: 'Instalador', name: 'Comunica.gov.ao-windows-x64.exe', size: '174 MB', available: true },
 			{ label: 'MSI (instalação gerida)', name: 'Comunica.gov.ao-windows-x64.msi', size: '~155 MB', available: false },
 		],
 		linux: [
