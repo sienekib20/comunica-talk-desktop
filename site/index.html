@@ -3,8 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Comunica.gov.ao — Transferir</title>
-	<meta name="description" content="Aplicação de desktop do Comunica.gov.ao para macOS, Windows e Linux.">
+	<title>Talk — gov.ao</title>
+	<meta name="description" content="Talk, a aplicação de conversas e chamadas do gov.ao, para macOS, Windows e Linux.">
 	<link rel="icon" href="assets/icon.png">
 	<style>
 	:root {
@@ -295,7 +295,7 @@
 <body>
 	<header class="hero">
 		<img class="hero__logo" src="assets/logo.png" alt="gov.ao">
-		<h1 class="hero__title">Comunica.gov.ao</h1>
+		<h1 class="hero__title">Talk</h1>
 		<p class="hero__subtitle">
 			Conversas, chamadas e reuniões do Governo de Angola, na sua área de trabalho.
 		</p>
@@ -310,7 +310,7 @@
 			<div class="panel">
 				<ol class="steps" id="after-download-steps"></ol>
 				<div class="command hidden" id="command-box">
-					<code id="command-text">xattr -dr com.apple.quarantine "/Applications/Comunica.gov.ao.app"</code>
+					<code id="command-text">xattr -dr com.apple.quarantine "/Applications/Talk.app"</code>
 					<button class="copy" id="copy-command" type="button">Copiar</button>
 				</div>
 			</div>
@@ -341,7 +341,7 @@
 
 	<footer class="footer">
 		<p>
-			Comunica.gov.ao — construído sobre o
+			Talk do gov.ao — construído sobre o
 			<a href="https://github.com/nextcloud/talk-desktop" target="_blank" rel="noreferrer">Nextcloud Talk</a>,
 			distribuído sob a licença AGPL-3.0-or-later.
 		</p>
@@ -368,8 +368,8 @@
 	const INSTALL_STEPS = {
 		macos: [
 			'Abra o ficheiro <code>.dmg</code> transferido.',
-			'Arraste o <strong>Comunica.gov.ao</strong> para a pasta Aplicações.',
-			'Abra o <strong>Terminal</strong> e execute este comando, necessário enquanto a aplicação não tiver certificado da Apple:<br><code>xattr -dr com.apple.quarantine "/Applications/Comunica.gov.ao.app"</code>',
+			'Arraste o <strong>Talk</strong> para a pasta Aplicações.',
+			'Abra o <strong>Terminal</strong> e execute este comando, necessário enquanto a aplicação não tiver certificado da Apple:<br><code>xattr -dr com.apple.quarantine "/Applications/Talk.app"</code>',
 			'Abra a aplicação normalmente.',
 		],
 		windows: [
@@ -379,7 +379,7 @@
 		],
 		linux: [
 			'Instale o Flatpak, se ainda não o tiver: <code>sudo apt install flatpak</code>.',
-			'Instale a aplicação: <code>flatpak install ./Comunica.gov.ao-linux-x64.flatpak</code>.',
+			'Instale a aplicação: <code>flatpak install ./Talk-linux-x64.flatpak</code>.',
 			'Em alternativa, extraia o ficheiro <code>.zip</code> e execute o binário directamente.',
 		],
 	}
@@ -459,7 +459,7 @@
 			needsCommand: true,
 			steps: [
 				'Abra o ficheiro <code>.dmg</code> transferido.',
-				'Arraste o <strong>Comunica.gov.ao</strong> para a pasta <strong>Aplicações</strong>.',
+				'Arraste o <strong>Talk</strong> para a pasta <strong>Aplicações</strong>.',
 				'Abra o <strong>Terminal</strong> e execute este comando, necessário enquanto a aplicação não tiver certificado da Apple:',
 			],
 		},
@@ -478,8 +478,8 @@
 			needsCommand: false,
 			steps: [
 				'Extraia o ficheiro <code>.zip</code> transferido.',
-				'Entre na pasta extraída e execute o ficheiro <code>Comunica.gov.ao</code>.',
-				'Se não arrancar, dê-lhe permissão de execução: <code>chmod +x Comunica.gov.ao</code>',
+				'Entre na pasta extraída e execute o ficheiro <code>Talk</code>.',
+				'Se não arrancar, dê-lhe permissão de execução: <code>chmod +x Talk</code>',
 			],
 		},
 	}

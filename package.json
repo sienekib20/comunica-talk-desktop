@@ -1,6 +1,6 @@
 {
   "name": "talk-desktop",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "private": true,
   "bugs": {
     "url": "https://github.com/nextcloud/talk-desktop/issues",
@@ -126,10 +126,10 @@
     "sharp": true
   },
   "desktopName": "com.nextcloud.talk.desktop",
-  "productName": "Nextcloud Talk",
+  "productName": "Talk",
   "talk": {
-    "stable": "v24.0.4",
-    "beta": "v24.0.4",
+    "stable": "v25.0.0",
+    "beta": "v25.0.0",
     "dev": "main"
   }
 }

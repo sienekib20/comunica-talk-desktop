@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
 # SPDX-License-Identifier: MIT
 #
-# Builds the Comunica.gov.ao installers for macOS, Windows and Linux
+# Builds the Talk installers for macOS, Windows and Linux
 # and publishes them as a GitHub release.
 #
 # Run it by pushing a tag: git tag v2.3.2 && git push github v2.3.2
 # Or from the Actions tab, which produces the files without a release.
 
-name: Comunica.gov.ao release
+name: Talk release
 
 on:
   push:
@@ -75,7 +75,7 @@ jobs:
       # into the ordinary "unidentified developer" prompt.
       - name: Sign the app locally
         if: matrix.os == 'macos-latest'
-        run: codesign --force --deep --sign - "out/Comunica.gov.ao-darwin-arm64/Comunica.gov.ao.app"
+        run: codesign --force --deep --sign - "out/Talk-darwin-arm64/Talk.app"
 
       - name: Create the installers
         run: ${{ matrix.package }}
@@ -87,8 +87,8 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           productbuild \
-            --component "out/Comunica.gov.ao-darwin-arm64/Comunica.gov.ao.app" /Applications \
-            "out/make/Comunica.gov.ao-macos-arm64.pkg"
+            --component "out/Talk-darwin-arm64/Talk.app" /Applications \
+            "out/make/Talk-macos-arm64.pkg"
 
       - name: Collect the installers
         uses: actions/upload-artifact@v4

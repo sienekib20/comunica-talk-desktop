@@ -5,7 +5,9 @@
 
 const APP_HOST = 'app'
 const APP_ORIGIN = `https://${APP_HOST}`
-const DEV_SERVER_ORIGIN = 'http://localhost:3000'
+// Must match the port of the Webpack plugin in forge.config.js
+const DEV_SERVER_PORT = process.env.DEV_SERVER_PORT ?? 3210
+const DEV_SERVER_ORIGIN = `http://localhost:${DEV_SERVER_PORT}`
 const MIN_REQUIRED_NEXTCLOUD_VERSION = 27
 const MIN_REQUIRED_TALK_VERSION = 17
 const MIN_REQUIRED_BUILT_IN_TALK_VERSION = '22.0.0-beta.1'

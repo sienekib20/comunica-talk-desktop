@@ -68,6 +68,9 @@ export class AppData {
 			const storedCredentials = await window.TALK_DESKTOP.getCredentials()
 			if (storedCredentials) {
 				this.credentials = storedCredentials
+				// LocalStorage belongs to an origin, the credentials do not. When the
+				// origin changes, the server URL is still known from the credentials.
+				this.serverUrl ||= storedCredentials.server
 			} else if (this.credentials) {
 				// Credentials from a version storing them in LocalStorage - move them to the keychain
 				this.persist()

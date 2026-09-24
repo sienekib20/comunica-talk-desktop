@@ -535,7 +535,9 @@ module.exports = {
 			config: {
 				mainConfig: './webpack.main.config.js',
 				devContentSecurityPolicy: `default-src 'self' 'unsafe-inline' data: blob: ${process.env.NEXTCLOUD_DEV_SERVER_HOSTS || '*'}; script-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob:`,
-				port: 3000, // The default for this plugin
+				// 3000 is the plugin default, but it is a busy port on a development machine:
+				// anything else listening there serves the app its own 404 page
+				port: Number(process.env.DEV_SERVER_PORT ?? 3210),
 				loggerPort: 9005, // The default is 9000, but it conflicts with Talk API
 				devServer: {
 					// Allow using app host

@@ -14,7 +14,7 @@ window.DOWNLOADS_CONFIG = {
 	repository: 'sienekib20/comunica-talk-desktop',
 
 	/** Versão publicada, sem o "v" */
-	version: '2.3.4',
+	version: '2.3.5',
 
 	/** Data da publicação, no formato AAAA-MM-DD */
 	releasedAt: '2026-09-24',
@@ -26,16 +26,16 @@ window.DOWNLOADS_CONFIG = {
 	 */
 	files: {
 		macos: [
-			{ label: 'Apple Silicon (M1 e posteriores)', name: 'Comunica.gov.ao-macos-arm64.dmg', size: '149 MB', available: true },
-			{ label: 'Intel', name: 'Comunica.gov.ao-macos-x64.dmg', size: '~150 MB', available: false },
+			{ label: 'Apple Silicon (M1 e posteriores)', name: 'Talk-macos-arm64.dmg', size: '149 MB', available: true },
+			{ label: 'Intel', name: 'Talk-macos-x64.dmg', size: '~150 MB', available: false },
 		],
 		windows: [
-			{ label: 'Instalador', name: 'Comunica.gov.ao-windows-x64.exe', size: '174 MB', available: true },
-			{ label: 'MSI (instalação gerida)', name: 'Comunica.gov.ao-windows-x64.msi', size: '~155 MB', available: false },
+			{ label: 'Instalador', name: 'Talk-windows-x64.exe', size: '174 MB', available: true },
+			{ label: 'MSI (instalação gerida)', name: 'Talk-windows-x64.msi', size: '~155 MB', available: false },
 		],
 		linux: [
-			{ label: 'Arquivo ZIP', name: 'Comunica.gov.ao-linux-x64.zip', size: '145 MB', available: true },
-			{ label: 'Flatpak', name: 'Comunica.gov.ao-linux-x64.flatpak', size: '~120 MB', available: false },
+			{ label: 'Arquivo ZIP', name: 'Talk-linux-x64.zip', size: '145 MB', available: true },
+			{ label: 'Flatpak', name: 'Talk-linux-x64.flatpak', size: '~120 MB', available: false },
 		],
 	},
 }
