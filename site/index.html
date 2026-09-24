@@ -281,6 +281,9 @@
 					A aplicação liga-se automaticamente a <strong>gov.ao</strong>. Inicie sessão com a
 					sua conta institucional através do <strong>ID.GOV.AO</strong> — a mesma que usa no
 					navegador. Não é preciso configurar servidor nem endereço.
+					<br><br>
+					Esta versão ainda não tem certificado de assinatura, por isso o sistema mostra um
+					aviso na primeira abertura. É esperado, e os passos acima indicam como prosseguir.
 				</div>
 			</div>
 		</section>
@@ -317,6 +320,7 @@
 			'Abra o ficheiro <code>.dmg</code> transferido.',
 			'Arraste o <strong>Comunica.gov.ao</strong> para a pasta Aplicações.',
 			'Na primeira abertura, clique com o botão direito no ícone e escolha <strong>Abrir</strong>.',
+			'Se o sistema disser que a aplicação está danificada, abra o Terminal e execute: <code>xattr -dr com.apple.quarantine "/Applications/Comunica.gov.ao.app"</code>',
 		],
 		windows: [
 			'Execute o ficheiro <code>.exe</code> transferido.',

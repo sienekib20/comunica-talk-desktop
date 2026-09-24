@@ -70,6 +70,13 @@ jobs:
       - name: Build the application
         run: ${{ matrix.build }}
 
+      # Apple Silicon refuses to run a binary with no signature at all.
+      # A local signature is not a Developer ID, but it turns "app is damaged"
+      # into the ordinary "unidentified developer" prompt.
+      - name: Sign the app locally
+        if: matrix.os == 'macos-latest'
+        run: codesign --force --deep --sign - "out/Comunica.gov.ao-darwin-arm64/Comunica.gov.ao.app"
+
       - name: Create the installers
         run: ${{ matrix.package }}
 
