@@ -70,13 +70,6 @@ jobs:
       - name: Fetch Nextcloud Talk and finish the setup
         run: npm run setup
 
-      - name: Build the application
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: ${{ matrix.build }}
-
       # With a Developer ID the app is signed and notarised by electron-forge
       # itself, see osxSign and osxNotarize in forge.config.js. The certificate
       # lives in a keychain created for this run only.
@@ -102,6 +95,13 @@ jobs:
 
           rm "$RUNNER_TEMP/certificate.p12"
           security find-identity -v -p codesigning "$KEYCHAIN"
+
+      - name: Build the application
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: ${{ matrix.build }}
 
       # Without a Developer ID, a local signature at least avoids the
       # "app is damaged" message that Apple Silicon shows for unsigned binaries
