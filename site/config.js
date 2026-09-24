@@ -14,10 +14,13 @@ window.DOWNLOADS_CONFIG = {
 	repository: 'sienekib20/comunica-talk-desktop',
 
 	/** Versão publicada, sem o "v" */
-	version: '2.3.7',
+	version: '2.3.5',
 
 	/** Data da publicação, no formato AAAA-MM-DD */
 	releasedAt: '2026-09-24',
+
+	// Nota: fixa na 2.3.5 por ser a última com os três sistemas. As versões
+	// seguintes falharam a notarização da Apple e saíram sem o ficheiro de macOS.
 
 	/**
 	 * Ficheiros de cada release. O nome é o do ficheiro anexado à release.
