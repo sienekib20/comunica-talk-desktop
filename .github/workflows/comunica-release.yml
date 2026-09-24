@@ -80,12 +80,23 @@ jobs:
       - name: Create the installers
         run: ${{ matrix.package }}
 
+      # Files written by an installer package do not carry the quarantine flag,
+      # so the app opens without clearing it by hand. The package itself is
+      # unsigned, so macOS still asks once before running it.
+      - name: Build an installer package for macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          productbuild \
+            --component "out/Comunica.gov.ao-darwin-arm64/Comunica.gov.ao.app" /Applications \
+            "out/make/Comunica.gov.ao-macos-arm64.pkg"
+
       - name: Collect the installers
         uses: actions/upload-artifact@v4
         with:
           name: comunica-${{ matrix.name }}
           path: |
             out/make/**/*.dmg
+            out/make/**/*.pkg
             out/make/**/*.exe
             out/make/**/*.msi
             out/make/**/*.flatpak

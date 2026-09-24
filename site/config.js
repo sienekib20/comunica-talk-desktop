@@ -14,7 +14,7 @@ window.DOWNLOADS_CONFIG = {
 	repository: 'sienekib20/comunica-talk-desktop',
 
 	/** Versão publicada, sem o "v" */
-	version: '2.3.3',
+	version: '2.3.4',
 
 	/** Data da publicação, no formato AAAA-MM-DD */
 	releasedAt: '2026-09-24',
@@ -26,7 +26,8 @@ window.DOWNLOADS_CONFIG = {
 	 */
 	files: {
 		macos: [
-			{ label: 'Apple Silicon (M1 e posteriores)', name: 'Comunica.gov.ao-macos-arm64.dmg', size: '149 MB', available: true },
+			{ label: 'Instalador (recomendado, sem Terminal)', name: 'Comunica.gov.ao-macos-arm64.pkg', size: '~150 MB', available: true },
+			{ label: 'Imagem de disco (arrastar para Aplicações)', name: 'Comunica.gov.ao-macos-arm64.dmg', size: '149 MB', available: true },
 			{ label: 'Intel', name: 'Comunica.gov.ao-macos-x64.dmg', size: '~150 MB', available: false },
 		],
 		windows: [
