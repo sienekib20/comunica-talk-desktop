@@ -10,6 +10,10 @@
 *.provisionprofile
 release-mac.sh
 
+# Build output that lands outside out/
+*.pkg
+*.dmg
+
 # Nextcloud Talk source code
 spreed/
 

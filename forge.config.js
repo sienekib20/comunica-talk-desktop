@@ -10,6 +10,7 @@ const { MakerWix } = require('@electron-forge/maker-wix')
 const { MakerZIP } = require('@electron-forge/maker-zip')
 const cheerio = require('cheerio')
 const mri = require('mri')
+const { execFileSync } = require('node:child_process')
 const fs = require('node:fs')
 const path = require('node:path')
 const semver = require('semver')
@@ -149,8 +150,31 @@ const hasMacosSign = !!(process.env.APPLE_ID && process.env.APPLE_ID_PASSWORD &&
  * and the sandbox entitlements, and it is never notarised: the store reviews it
  * instead. Everything else keeps building as before.
  */
-const isMacAppStore = process.argv.includes('mas')
-const MAS_IDENTITY = `3rd Party Mac Developer Application: ${process.env.APPLE_TEAM_NAME ?? 'Instituto de Modernizacao Administrativa'} (${process.env.APPLE_TEAM_ID ?? ''})`
+const isMacAppStore = process.argv.some((arg) => arg === 'mas' || arg === '--platform=mas')
+/**
+ * The store signing identity, read from the keychain so that it does not have
+ * to be repeated in the configuration or in an environment variable
+ */
+function findStoreIdentity() {
+	const identities = execFileSync('security', ['find-identity', '-v']).toString()
+	const identity = identities.match(/"(3rd Party Mac Developer Application: [^"]+)"/)?.[1]
+	if (!identity) {
+		throw new Error('No "3rd Party Mac Developer Application" certificate in the keychain')
+	}
+	return identity
+}
+
+/**
+ * The provisioning profile downloaded from the developer portal, whatever it is named
+ */
+function findProvisioningProfile() {
+	const directory = path.join(__dirname, './resources/macos')
+	const profile = fs.readdirSync(directory).find((file) => file.endsWith('.provisionprofile'))
+	if (!profile) {
+		throw new Error('No .provisionprofile found in resources/macos, download it from the developer portal')
+	}
+	return path.join(directory, profile)
+}
 const hasWindowsSign = !!process.env.WINDOWS_SIGN_PARAMS
 
 let talkPackageJson
@@ -230,8 +254,8 @@ module.exports = {
 		extendInfo: path.join(__dirname, './resources/macos/entitlements.plist'),
 		osxSign: isMacAppStore
 			? {
-					identity: MAS_IDENTITY,
-					provisioningProfile: path.join(__dirname, './resources/macos/Talk_Store_Profile.provisionprofile'),
+					identity: findStoreIdentity(),
+					provisioningProfile: findProvisioningProfile(),
 					optionsForFile: (filePath) => ({
 						entitlements: filePath.includes('.app/Contents/MacOS/')
 							? path.join(__dirname, './resources/macos/entitlements.mas.plist')
