@@ -143,19 +143,12 @@ function signWithParamsToWindowsSignOptions(signWithParams) {
 }
 
 const hasMacosSign = !!(process.env.APPLE_ID && process.env.APPLE_ID_PASSWORD && process.env.APPLE_TEAM_ID)
-
-/**
- * Mac App Store build. It needs a different certificate, a provisioning profile
- * and the sandbox entitlements, and it is never notarised: the store reviews it
- * instead. Everything else keeps building as before.
- */
-const isMacAppStore = process.argv.includes('mas')
-const MAS_IDENTITY = `3rd Party Mac Developer Application: ${process.env.APPLE_TEAM_NAME ?? 'Instituto de Modernizacao Administrativa'} (${process.env.APPLE_TEAM_ID ?? ''})`
 const hasWindowsSign = !!process.env.WINDOWS_SIGN_PARAMS
 
 let talkPackageJson
 
 module.exports = {
+	
 	hooks: {
 		generateAssets() {
 			if (!fs.existsSync(TALK_PATH)) {
@@ -228,19 +221,8 @@ module.exports = {
 		// https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/LaunchServicesKeys.html#//apple_ref/doc/uid/TP40009250-SW8
 		appCategoryType: 'public.app-category.business',
 		extendInfo: path.join(__dirname, './resources/macos/entitlements.plist'),
-		osxSign: isMacAppStore
-			? {
-					identity: MAS_IDENTITY,
-					provisioningProfile: path.join(__dirname, './resources/macos/Talk_Store_Profile.provisionprofile'),
-					optionsForFile: (filePath) => ({
-						entitlements: filePath.includes('.app/Contents/MacOS/')
-							? path.join(__dirname, './resources/macos/entitlements.mas.plist')
-							: path.join(__dirname, './resources/macos/entitlements.mas.inherit.plist'),
-					}),
-				}
-			: hasMacosSign && {},
-		// The store reviews the app, so a store build is never notarised
-		osxNotarize: !isMacAppStore && hasMacosSign && {
+		osxSign: hasMacosSign && {},
+		osxNotarize: hasMacosSign && {
 			appleId: process.env.APPLE_ID,
 			appleIdPassword: process.env.APPLE_ID_PASSWORD,
 			teamId: process.env.APPLE_TEAM_ID,

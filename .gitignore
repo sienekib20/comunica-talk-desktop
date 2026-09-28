@@ -4,6 +4,12 @@
 # Env
 .env
 
+# Signing material: private keys and passwords never belong in the repository
+*.p12
+*.cer
+*.provisionprofile
+release-mac.sh
+
 # Nextcloud Talk source code
 spreed/
 
