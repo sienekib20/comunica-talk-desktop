@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Talk — Política de privacidade</title>
+	<meta name="description" content="Política de privacidade da aplicação Talk do gov.ao.">
+	<link rel="icon" href="assets/icon.png">
+	<style>
+	:root {
+		--brand: #3880C3;
+		--brand-dark: #17497c;
+		--brand-mid: #2e70b0;
+		--text: #1b2733;
+		--text-soft: #5b6b7c;
+		--surface: #ffffff;
+		--page: #f4f7fb;
+		--border: #dfe7f0;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--text: #e8eef5;
+			--text-soft: #9fb0c2;
+			--surface: #16202b;
+			--page: #0e161f;
+			--border: #263545;
+		}
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+
+	body {
+		margin: 0;
+		background: var(--page);
+		color: var(--text);
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+		line-height: 1.7;
+	}
+
+	.hero {
+		padding: 56px 24px 40px;
+		text-align: center;
+		color: #fff;
+		background:
+			radial-gradient(120% 90% at 15% 0%, #4a9de0 0%, transparent 55%),
+			linear-gradient(155deg, var(--brand-mid) 0%, var(--brand-dark) 100%);
+	}
+
+	.hero h1 {
+		margin: 16px 0 6px;
+		font-size: clamp(24px, 4vw, 32px);
+	}
+
+	.hero p {
+		margin: 0;
+		opacity: 0.85;
+		font-size: 15px;
+	}
+
+	.hero img {
+		width: 160px;
+		max-width: 50%;
+	}
+
+	main {
+		max-width: 780px;
+		margin: 0 auto;
+		padding: 40px 24px 72px;
+	}
+
+	section {
+		margin-bottom: 36px;
+		padding: 24px 26px;
+		border: 1px solid var(--border);
+		border-radius: 14px;
+		background: var(--surface);
+	}
+
+	h2 {
+		margin: 0 0 12px;
+		font-size: 19px;
+	}
+
+	p, li {
+		font-size: 15px;
+	}
+
+	ul {
+		padding-left: 20px;
+	}
+
+	li + li {
+		margin-top: 6px;
+	}
+
+	.muted {
+		color: var(--text-soft);
+		font-size: 14px;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 12px;
+		font-size: 14px;
+	}
+
+	th, td {
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--border);
+		text-align: left;
+		vertical-align: top;
+	}
+
+	th {
+		font-weight: 600;
+	}
+
+	footer {
+		padding: 28px 24px 48px;
+		border-top: 1px solid var(--border);
+		color: var(--text-soft);
+		font-size: 14px;
+		text-align: center;
+	}
+
+	a {
+		color: var(--brand);
+	}
+	</style>
+</head>
+<body>
+	<header class="hero">
+		<img src="assets/logo.png" alt="gov.ao">
+		<h1>Política de privacidade</h1>
+		<p>Aplicação Talk · Instituto de Modernização Administrativa</p>
+	</header>
+
+	<main>
+		<section>
+			<h2>Quem trata os dados</h2>
+			<p>
+				A aplicação Talk é disponibilizada pelo <strong>Instituto de Modernização Administrativa (IMA)</strong>,
+				que opera os servidores do <strong>gov.ao</strong> onde as comunicações são processadas e guardadas.
+			</p>
+			<p class="muted">
+				A aplicação destina-se a funcionários e colaboradores da Administração Pública angolana
+				com conta institucional gov.ao.
+			</p>
+		</section>
+
+		<section>
+			<h2>Que dados são tratados</h2>
+			<p>A aplicação é um cliente do servidor gov.ao. Os dados que trata são os necessários ao seu funcionamento:</p>
+			<table>
+				<tr>
+					<th>Dados</th>
+					<th>Para quê</th>
+				</tr>
+				<tr>
+					<td>Identificação da conta (nome de utilizador, nome próprio, endereço de email, fotografia de perfil)</td>
+					<td>Autenticar e identificar o utilizador nas conversas</td>
+				</tr>
+				<tr>
+					<td>Mensagens, ficheiros partilhados e registo de chamadas</td>
+					<td>Prestar o serviço de comunicação</td>
+				</tr>
+				<tr>
+					<td>Áudio e vídeo durante chamadas</td>
+					<td>Transmitir a chamada aos participantes. Não é gravado pela aplicação</td>
+				</tr>
+				<tr>
+					<td>Credencial de acesso do dispositivo</td>
+					<td>Manter a sessão iniciada sem pedir a palavra-passe a cada abertura</td>
+				</tr>
+			</table>
+		</section>
+
+		<section>
+			<h2>Onde ficam os dados</h2>
+			<ul>
+				<li><strong>No servidor gov.ao:</strong> mensagens, ficheiros e informação das conversas, sujeitos às políticas de conservação da instituição.</li>
+				<li><strong>No seu computador:</strong> a credencial de acesso, guardada cifrada pelo sistema operativo (Keychain no macOS, DPAPI no Windows), e uma cópia local das conversas para a aplicação funcionar com rapidez.</li>
+			</ul>
+			<p class="muted">Ao terminar sessão, a credencial e a cópia local são eliminadas do computador.</p>
+		</section>
+
+		<section>
+			<h2>O que a aplicação não faz</h2>
+			<ul>
+				<li>Não recolhe dados de utilização, estatísticas nem publicidade.</li>
+				<li>Não integra serviços de análise ou de rastreio de terceiros.</li>
+				<li>Não partilha dados com terceiros. A aplicação comunica exclusivamente com o servidor gov.ao.</li>
+				<li>Não grava chamadas.</li>
+			</ul>
+		</section>
+
+		<section>
+			<h2>Permissões do sistema</h2>
+			<ul>
+				<li><strong>Microfone e câmara:</strong> pedidos apenas quando entra numa chamada.</li>
+				<li><strong>Gravação de ecrã:</strong> pedida apenas quando escolhe partilhar o ecrã.</li>
+				<li><strong>Ficheiros:</strong> acede aos ficheiros que escolher enviar e à pasta de transferências para guardar os que receber.</li>
+				<li><strong>Notificações:</strong> para avisar de mensagens e chamadas.</li>
+			</ul>
+		</section>
+
+		<section>
+			<h2>Direitos dos titulares</h2>
+			<p>
+				Os pedidos de acesso, retificação ou eliminação de dados pessoais devem ser dirigidos ao
+				Instituto de Modernização Administrativa, enquanto entidade responsável pelo tratamento.
+			</p>
+		</section>
+
+		<section>
+			<h2>Software de origem</h2>
+			<p>
+				A aplicação é derivada do <a href="https://github.com/nextcloud/talk-desktop" target="_blank" rel="noreferrer">Nextcloud Talk</a>,
+				distribuído sob a licença AGPL-3.0-or-later. O código-fonte desta versão está disponível em
+				<a href="https://github.com/sienekib20/comunica-talk-desktop" target="_blank" rel="noreferrer">github.com/sienekib20/comunica-talk-desktop</a>.
+			</p>
+		</section>
+
+		<section>
+			<h2>Contacto</h2>
+			<p>
+				Instituto de Modernização Administrativa (IMA) — Luanda, Angola<br>
+				<a href="mailto:developer@ima.gov.ao">developer@ima.gov.ao</a>
+			</p>
+		</section>
+	</main>
+
+	<footer>
+		<p>Última atualização: setembro de 2026</p>
+	</footer>
+</body>
+</html>
