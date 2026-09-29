@@ -103,6 +103,16 @@ export const systemInfo = {
 	 * Only macOS Touch ID is supported - Electron has no API for Windows Hello.
 	 */
 	hasBiometricUnlock: isMac && systemPreferences.canPromptTouchID(),
+
+	/**
+	 * Whether screen sharing goes through the picker macOS provides.
+	 *
+	 * A Mac App Store build is sandboxed and never gets the screen recording
+	 * permission that listing the windows ourselves requires. The system picker
+	 * asks the user instead and hands over only what they chose, so it needs no
+	 * permission - but macOS only offers it from version 15 (Darwin 24) on.
+	 */
+	hasSystemScreenPicker: isMac && process.mas && Number(os.release().split('.')[0]) >= 24,
 }
 
 /**

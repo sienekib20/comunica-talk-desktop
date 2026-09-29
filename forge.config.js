@@ -256,10 +256,13 @@ module.exports = {
 			? {
 					identity: findStoreIdentity(),
 					provisioningProfile: findProvisioningProfile(),
+					// Helpers live under Frameworks and inherit the sandbox of the app that
+					// started them. The app itself must not inherit: it has no sandboxed
+					// parent, and macOS kills it on launch if it tries.
 					optionsForFile: (filePath) => ({
-						entitlements: filePath.includes('.app/Contents/MacOS/')
-							? path.join(__dirname, './resources/macos/entitlements.mas.plist')
-							: path.join(__dirname, './resources/macos/entitlements.mas.inherit.plist'),
+						entitlements: filePath.includes('/Contents/Frameworks/')
+							? path.join(__dirname, './resources/macos/entitlements.mas.inherit.plist')
+							: path.join(__dirname, './resources/macos/entitlements.mas.plist'),
 					}),
 				}
 			: hasMacosSign && {},

@@ -143,6 +143,16 @@ app.whenReady().then(async () => {
 	initLaunchAtStartupListener()
 	registerAppProtocolHandler()
 
+	// Screen sharing through the picker macOS provides. With it available the
+	// handler below is never called: the system asks the user and hands the
+	// chosen window straight to the page.
+	if (systemInfo.hasSystemScreenPicker) {
+		session.defaultSession.setDisplayMediaRequestHandler(
+			(request, callback) => callback({}),
+			{ useSystemPicker: true },
+		)
+	}
+
 	/**
 	 * Schedule check for a new version available to download from GitHub
 	 */

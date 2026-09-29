@@ -6,6 +6,12 @@
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
 
+	<!-- V8 compiles JavaScript at runtime. Without this the sandbox refuses the
+	     memory it needs and the app dies on launch with "Failed to reserve
+	     virtual memory for CodeRange" -->
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+
 	<!-- Talks to the Nextcloud server and to the signalling and TURN servers -->
 	<key>com.apple.security.network.client</key>
 	<true/>

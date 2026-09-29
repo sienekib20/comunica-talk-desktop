@@ -7,5 +7,8 @@
 	<true/>
 	<key>com.apple.security.inherit</key>
 	<true/>
+	<!-- The renderer processes compile JavaScript too -->
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
 </dict>
 </plist>
