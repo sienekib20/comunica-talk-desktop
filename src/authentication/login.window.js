@@ -45,6 +45,42 @@ const CLICK_LOGIN_BUTTON = `
 `
 
 /**
+ * The server hides the password form behind a choice of login methods, and
+ * renders it hidden again on every load - including after a wrong password, so
+ * the error message would never be seen.
+ *
+ * Opening the form makes the error visible and saves a click on every login.
+ * The choice of the identity provider is left in place, untouched.
+ *
+ * It runs on the server's own page, so it fails quietly: if nothing matches,
+ * the page is shown exactly as the server sent it.
+ */
+const OPEN_PASSWORD_FORM = `
+	(async () => {
+		const isVisible = (element) => !!element && element.getClientRects().length > 0
+
+		// The page is rendered by Vue, nothing exists yet when the page is loaded
+		const deadline = Date.now() + 5000
+		while (Date.now() < deadline) {
+			if (isVisible(document.querySelector('input[type="password"]'))) {
+				return true
+			}
+
+			// The link that swaps the provider buttons for the password form. It carries a
+			// "#body-login" fragment, which is steadier than matching its wording.
+			const option = [...document.querySelectorAll('a, button')]
+				.filter(isVisible)
+				.find((element) => element.getAttribute('href')?.includes('body-login'))
+			option?.click()
+
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		}
+
+		return false
+	})()
+`
+
+/**
  * Only one login window may exist at a time.
  *
  * @type {{ window: import('electron').BrowserWindow, promise: Promise<import('./login.service.js').Credentials|Error> }|undefined}
@@ -127,10 +163,36 @@ function openLoginWebView(parentWindow, serverUrl, options = {}) {
 		if (options.skipConfirmation) {
 			// Only the server's own login flow pages are auto-confirmed. The login form itself
 			// and the identity provider are never touched - the user always logs in by hand.
-			const isLoginFlowPage = () => window.webContents.getURL().startsWith(`${serverUrl}/index.php/login/flow`)
+			/**
+			 * The pages of the login flow itself, which only ask to continue.
+			 * Told apart by the path, because the address keeps the same host throughout.
+			 *
+			 * @param {'flow'|'login'} kind - Which page to test for
+			 * @return {boolean}
+			 */
+			const isServerPage = (kind) => {
+				try {
+					const url = new URL(window.webContents.getURL())
+					if (url.origin !== new URL(serverUrl).origin) {
+						return false
+					}
+					const isFlow = url.pathname.includes('/login/flow')
+					return kind === 'flow' ? isFlow : (url.pathname.includes('/login') && !isFlow)
+				} catch {
+					return false
+				}
+			}
 
 			window.webContents.on('did-finish-load', async () => {
-				if (!isLoginFlowPage()) {
+				// The login form, where the user types - open it so that the server's
+				// error messages are visible without a detour through the method choice
+				if (isServerPage('login')) {
+					await window.webContents.executeJavaScript(OPEN_PASSWORD_FORM).catch(() => false)
+					showLoginPage()
+					return
+				}
+
+				if (!isServerPage('flow')) {
 					showLoginPage()
 					return
 				}
