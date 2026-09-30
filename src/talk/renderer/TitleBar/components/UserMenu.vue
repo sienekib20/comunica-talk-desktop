@@ -4,41 +4,30 @@
   -->
 
 <script setup lang="ts">
-import type { Ref } from 'vue'
-import type { ReleaseInfo } from '../../../../app/githubRelease.service.ts'
 import type { UserStatusStatusType } from '../../UserStatus/userStatus.types.ts'
 
 import { t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { storeToRefs } from 'pinia'
-import { inject, onBeforeMount, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import NcAvatar from '@nextcloud/vue/components/NcAvatar'
 import NcPopover from '@nextcloud/vue/components/NcPopover'
 import NcUserStatusIcon from '@nextcloud/vue/components/NcUserStatusIcon'
-import IconBugOutline from 'vue-material-design-icons/BugOutline.vue'
 import IconCheck from 'vue-material-design-icons/Check.vue'
 import IconChevronLeft from 'vue-material-design-icons/ChevronLeft.vue'
 import IconChevronRight from 'vue-material-design-icons/ChevronRight.vue'
-import IconCloudDownloadOutline from 'vue-material-design-icons/CloudDownloadOutline.vue'
-import IconCogOutline from 'vue-material-design-icons/CogOutline.vue'
 import IconEmoticonOutline from 'vue-material-design-icons/EmoticonOutline.vue'
-import IconInformationOutline from 'vue-material-design-icons/InformationOutline.vue'
 import IconLock from 'vue-material-design-icons/Lock.vue'
 import IconLogout from 'vue-material-design-icons/Logout.vue'
 import IconPencilOutline from 'vue-material-design-icons/PencilOutline.vue'
 import IconPower from 'vue-material-design-icons/Power.vue'
-import IconReload from 'vue-material-design-icons/Reload.vue'
-import IconWeb from 'vue-material-design-icons/Web.vue'
 import UserStatusDialog from '../../UserStatus/UserStatusDialog.vue'
 import ThemeLogo from './ThemeLogo.vue'
-import UiDotBadge from './UiDotBadge.vue'
 import UiMenu from './UiMenu.vue'
 import UiMenuItem from './UiMenuItem.vue'
 import UiMenuSeparator from './UiMenuSeparator.vue'
 import { appData } from '../../../../app/AppData.js'
 import { TITLE_BAR_HEIGHT } from '../../../../constants.js'
-import { BUILD_CONFIG } from '../../../../shared/build.config.ts'
-import { getCurrentTalkRoutePath } from '../../TalkWrapper/talk.service.ts'
 import { useUserStatusStore } from '../../UserStatus/userStatus.store.ts'
 import { availableUserStatusStatusTypes, userStatusTranslations } from '../../UserStatus/userStatus.utils.ts'
 
@@ -64,26 +53,6 @@ watch(isOpen, () => {
 })
 
 const userProfileLink = generateUrl('/u/{userid}', { userid: user.id })
-
-const packageInfo = window.TALK_DESKTOP.packageInfo
-const isTalkInitialized = inject<Ref<boolean>>('talk:isInitialized')
-
-const showHelp = () => window.TALK_DESKTOP.showHelp()
-const reload = () => window.location.reload()
-const openSettings = () => window.OCA.Talk.Settings.open()
-const openInWeb = () => window.open(generateUrl(getCurrentTalkRoutePath()), '_blank')
-
-const newRelease = ref<ReleaseInfo | null>(null)
-onBeforeMount(async () => {
-	newRelease.value = await window.TALK_DESKTOP.checkForUpdate()
-})
-
-const unsubscribeNewVersion = window.TALK_DESKTOP.onUpdateAvailable((release: ReleaseInfo) => {
-	newRelease.value = release
-})
-onBeforeUnmount(() => {
-	unsubscribeNewVersion()
-})
 
 const lock = window.TALK_DESKTOP.lock.lockNow
 const logout = window.TALK_DESKTOP.logout
@@ -217,65 +186,6 @@ function handleUserStatusChange(status: UserStatusStatusType) {
 
 							<UiMenuSeparator />
 						</template>
-
-						<UiMenuItem
-							v-if="newRelease"
-							tag="a"
-							:href="newRelease.installer?.downloadUrl || newRelease.url"
-							:download="newRelease.installer?.filename || undefined"
-							target="_blank">
-							<template #icon>
-								<UiDotBadge
-									insetBlockStart="32%"
-									insetInlineEnd="22%"
-									enabled
-									noOutline>
-									<IconCloudDownloadOutline :size="20" />
-								</UiDotBadge>
-							</template>
-							{{ t('talk_desktop', 'Update') }}
-						</UiMenuItem>
-
-						<UiMenuItem v-if="isTalkInitialized" tag="button" @click="openInWeb">
-							<template #icon>
-								<IconWeb :size="20" />
-							</template>
-							{{ t('talk_desktop', 'Open in web browser') }}
-						</UiMenuItem>
-
-						<UiMenuItem tag="button" @click="openSettings">
-							<template #icon>
-								<IconCogOutline :size="20" />
-							</template>
-							{{ t('talk_desktop', 'App settings') }}
-						</UiMenuItem>
-
-						<UiMenuItem tag="button" @click="showHelp">
-							<template #icon>
-								<IconInformationOutline :size="20" />
-							</template>
-							{{ t('talk_desktop', 'About') }}
-						</UiMenuItem>
-
-						<UiMenuItem tag="button" @click="reload">
-							<template #icon>
-								<IconReload :size="20" />
-							</template>
-							{{ t('talk_desktop', 'Force reload') }}
-						</UiMenuItem>
-
-						<UiMenuItem
-							v-if="!BUILD_CONFIG.isBranded"
-							tag="a"
-							:href="packageInfo.bugs.create"
-							target="_blank">
-							<template #icon>
-								<IconBugOutline :size="20" />
-							</template>
-							{{ t('talk_desktop', 'Report a bug') }}
-						</UiMenuItem>
-
-						<UiMenuSeparator />
 
 						<UiMenuItem tag="button" @click="lock">
 							<template #icon>

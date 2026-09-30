@@ -5,6 +5,7 @@
 
 <script setup lang="ts">
 import DevMenu from './components/DevMenu.vue'
+import MainMenu from './components/MainMenu.vue'
 import UserMenu from './components/UserMenu.vue'
 import { BUILD_CONFIG } from '../../../shared/build.config.ts'
 import { useDevMode } from '../../../shared/useDevMode.ts'
@@ -42,6 +43,10 @@ const { isDevMode } = useDevMode()
 
 			<div v-if="isDevMode" class="title-bar__item" data-theme-dark>
 				<DevMenu />
+			</div>
+
+			<div class="title-bar__item title-bar__main-menu-container" data-theme-dark>
+				<MainMenu />
 			</div>
 
 			<div class="title-bar__item">
@@ -99,5 +104,12 @@ const { isDevMode } = useDevMode()
 	flex: 1 0 auto;
 	height: 100%;
 	-webkit-app-region: drag;
+}
+
+.title-bar__main-menu-container {
+	/* Increase the trigger button size to fill the title bar except for 4px paddings */
+	/* Aligns NcAction's popover with the title bar with 4px distance */
+	/* TODO: instead, either add distance prop to NcActions or decrease the title bar size to 34px + 4px * 2 */
+	--default-clickable-area: 38px;
 }
 </style>
