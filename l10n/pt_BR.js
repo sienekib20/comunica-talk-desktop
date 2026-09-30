@@ -164,6 +164,8 @@ OC.L10N.register(
     "Offline" : "Off-line",
     "Unknown status" : "Status desconhecido",
     "You missed a call from {user}" : "Você perdeu uma chamada de {user}",
-    "You missed a group call in {call}" : "Você perdeu uma chamada em grupo em {call}"
+    "You missed a group call in {call}" : "Você perdeu uma chamada em grupo em {call}",
+    "Set up Touch ID" : "Configurar o Touch ID",
+    "Touch ID is the only way to unlock the app. Without it the screen is never locked." : "O Touch ID é a única forma de desbloquear o aplicativo. Sem ele, a tela nunca é bloqueada."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

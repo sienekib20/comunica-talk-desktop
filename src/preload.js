@@ -206,47 +206,21 @@ const TALK_DESKTOP = {
 		/**
 		 * Get the state of the lock screen
 		 *
-		 * @return {Promise<{ hasCode: boolean, hasBiometrics: boolean, user: string|null }>}
+		 * @return {Promise<{ user: string|null }>}
 		 */
 		getState: () => ipcRenderer.invoke('lock:getState'),
 		/**
-		 * Set a new unlock code and lock. Only allowed while the app is unlocked.
-		 *
-		 * @param {string} code - Unlock code
-		 * @return {Promise<boolean>} - Whether the code was saved
-		 */
-		setCode: (code) => ipcRenderer.invoke('lock:setCode', code),
-		/**
-		 * Close the unlock code creation without setting one
-		 *
-		 * @return {Promise<void>}
-		 */
-		cancelSetup: () => ipcRenderer.invoke('lock:cancelSetup'),
-		/**
-		 * Whether an unlock code has been set
+		 * Whether the app can be locked, that is whether Touch ID can unlock it
 		 *
 		 * @return {Promise<boolean>}
 		 */
-		hasCode: () => ipcRenderer.invoke('lock:hasCode'),
+		canLock: () => ipcRenderer.invoke('lock:canLock'),
+
 		/**
-		 * Ask to set a new unlock code
-		 *
-		 * @return {Promise<void>}
+		 * Open the system settings where Touch ID is set up
 		 */
-		changeCode: () => ipcRenderer.invoke('lock:changeCode'),
-		/**
-		 * Remove the unlock code
-		 *
-		 * @return {Promise<boolean>} - Whether the code was removed
-		 */
-		removeCode: () => ipcRenderer.invoke('lock:removeCode'),
-		/**
-		 * Unlock with the code
-		 *
-		 * @param {string} code - Unlock code
-		 * @return {Promise<boolean>} - Whether the code was correct
-		 */
-		verifyCode: (code) => ipcRenderer.invoke('lock:verifyCode', code),
+		openBiometricSettings: () => ipcRenderer.invoke('lock:openBiometricSettings'),
+
 		/**
 		 * Unlock with the system biometric authentication
 		 *

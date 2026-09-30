@@ -72,16 +72,6 @@ export type AppConfig = {
 	biometricUnlock: boolean
 
 	/**
-	 * Derived unlock code for the lock screen. The code itself is never stored.
-	 */
-	unlockCode?: { salt: string, hash: string }
-
-	/**
-	 * Number of failed unlock attempts, kept across restarts to slow down guessing
-	 */
-	unlockFailedAttempts?: number
-
-	/**
 	 * Lock the app after this many minutes of inactivity. 0 disables auto lock.
 	 * The app keeps running while locked, so messages and calls still arrive.
 	 * Default: 0

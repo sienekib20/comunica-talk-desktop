@@ -6,9 +6,6 @@
 <script setup lang="ts">
 import { t } from '@nextcloud/l10n'
 import { storeToRefs } from 'pinia'
-import { onMounted, ref } from 'vue'
-import NcButton from '@nextcloud/vue/components/NcButton'
-import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcFormBox from '@nextcloud/vue/components/NcFormBox'
 import NcFormBoxButton from '@nextcloud/vue/components/NcFormBoxButton'
 import NcFormBoxSwitch from '@nextcloud/vue/components/NcFormBoxSwitch'
@@ -26,6 +23,7 @@ import { useAppConfigStore } from './appConfig.store.ts'
 import { useAppConfigValue } from './useAppConfigValue.ts'
 
 const isLinux = window.systemInfo.isLinux
+const isMac = window.systemInfo.isMac
 const hasBiometricUnlock = window.systemInfo.hasBiometricUnlock
 
 const { isRelaunchRequired } = storeToRefs(useAppConfigStore())
@@ -55,34 +53,11 @@ const notificationLevelOptions = [
 	{ label: t('talk_desktop', 'Never'), value: 'never' },
 ]
 
-// Not awaited at the top level, that would turn the component into an async one
-const hasUnlockCode = ref(false)
 /**
- *
+ * Touch ID belongs to the system, not to this app - send the user where it is set up
  */
-async function refreshUnlockCodeState() {
-	hasUnlockCode.value = await window.TALK_DESKTOP.lock.hasCode()
-}
-onMounted(refreshUnlockCodeState)
-
-/**
- * Ask to create a new unlock code. The window closes on its own when saved.
- */
-async function changeUnlockCode() {
-	await window.TALK_DESKTOP.lock.changeCode()
-	await refreshUnlockCodeState()
-}
-
-const isRemoveDialogOpen = ref(false)
-
-/**
- * Remove the unlock code, leaving the app without a lock.
- * Confirmed first - it silently turns the screen lock off.
- */
-async function removeUnlockCode() {
-	isRemoveDialogOpen.value = false
-	await window.TALK_DESKTOP.lock.removeCode()
-	await refreshUnlockCodeState()
+function openBiometricSettings() {
+	window.TALK_DESKTOP.lock.openBiometricSettings()
 }
 
 const secondarySpeaker = useAppConfigValue('secondarySpeaker')
@@ -104,12 +79,10 @@ const secondarySpeakerDevice = useAppConfigValue('secondarySpeakerDevice')
 				:label="t('talk_desktop', 'Unlock with Touch ID')"
 				:helperText="t('talk_desktop', 'Ask for Touch ID when the app starts with a saved session')" />
 			<NcFormBoxButton
-				:label="hasUnlockCode ? t('talk_desktop', 'Change the unlock code') : t('talk_desktop', 'Create an unlock code')"
-				@click="changeUnlockCode" />
-			<NcFormBoxButton
-				v-if="hasUnlockCode"
-				:label="t('talk_desktop', 'Remove the unlock code')"
-				@click="isRemoveDialogOpen = true" />
+				v-else-if="isMac"
+				:label="t('talk_desktop', 'Set up Touch ID')"
+				:helperText="t('talk_desktop', 'Touch ID is the only way to unlock the app. Without it the screen is never locked.')"
+				@click="openBiometricSettings" />
 		</NcFormBox>
 
 		<NcFormBox v-if="!isLinux">
@@ -156,20 +129,6 @@ const secondarySpeakerDevice = useAppConfigValue('secondarySpeakerDevice')
 				<UiFormBoxAudioOutput v-if="secondarySpeaker" v-model="secondarySpeakerDevice" :label="t('talk_desktop', 'Secondary speaker')" />
 			</NcFormBox>
 		</NcFormGroup>
-		<NcDialog
-			v-if="isRemoveDialogOpen"
-			:name="t('talk_desktop', 'Remove the unlock code')"
-			:message="t('talk_desktop', 'The screen lock will be turned off and the app will no longer ask for a code.')"
-			@closing="isRemoveDialogOpen = false">
-			<template #actions>
-				<NcButton variant="tertiary" @click="isRemoveDialogOpen = false">
-					{{ t('talk_desktop', 'Cancel') }}
-				</NcButton>
-				<NcButton variant="error" @click="removeUnlockCode">
-					{{ t('talk_desktop', 'Remove') }}
-				</NcButton>
-			</template>
-		</NcDialog>
 	</div>
 </template>
 

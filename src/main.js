@@ -19,7 +19,7 @@ const { openChromeWebRtcInternals } = require('./app/dev.utils.ts')
 const { triggerDownloadUrl } = require('./app/downloads.ts')
 const { setupReleaseNotificationScheduler, checkForUpdate } = require('./app/githubRelease.service.ts')
 const { initLaunchAtStartupListener } = require('./app/launchAtStartup.config.ts')
-const { focusLockWindow, hasUnlockCode, registerLockWindow, removeUnlockCode, setUnlockCode, setupAutoLock, unlockWithBiometrics, verifyUnlockCode } = require('./app/lock.service.ts')
+const { focusLockWindow, registerLockWindow, setupAutoLock, unlockWithBiometrics } = require('./app/lock.service.ts')
 const { runMigrations } = require('./app/migration.service.ts')
 const { systemInfo, isMac, isWindows, isSameExecution, isSquirrel, relaunchApp } = require('./app/system.utils.ts')
 const { applyTheme } = require('./app/theme.config.ts')
@@ -355,13 +355,6 @@ app.whenReady().then(async () => {
 	 */
 	let lockWindow
 
-	/**
-	 * The window asking to create an unlock code, shown while the app is still unlocked.
-	 *
-	 * @type {import('electron').BrowserWindow|undefined}
-	 */
-	let setupWindow
-
 	const isLocked = () => Boolean(lockWindow)
 
 	/**
@@ -374,9 +367,9 @@ app.whenReady().then(async () => {
 			contents.send('lock:change', locked)
 		}
 	}
-	const isLockable = () => createMainWindow === createTalkWindow && !isLocked() && !setupWindow
-	// There is no point in locking the app if there is no way to unlock it
-	const canUnlock = () => hasUnlockCode() || (systemInfo.hasBiometricUnlock && getAppConfig('biometricUnlock'))
+	const isLockable = () => createMainWindow === createTalkWindow && !isLocked()
+	// Touch ID is the only way back in, so without it there is no point in locking
+	const canUnlock = () => systemInfo.hasBiometricUnlock && getAppConfig('biometricUnlock')
 
 	/**
 	 * Lock the app
@@ -400,22 +393,6 @@ app.whenReady().then(async () => {
 	}
 
 	/**
-	 * Ask to create an unlock code. The app stays unlocked and visible meanwhile,
-	 * so that only the person already using it can set the code.
-	 */
-	function openLockSetup() {
-		if (!isLockable()) {
-			return
-		}
-
-		setupWindow = createLockWindow({ setup: true, parentWindow: mainWindow })
-		onReadyToShow(setupWindow, () => setupWindow?.show())
-		setupWindow.on('closed', () => {
-			setupWindow = undefined
-		})
-	}
-
-	/**
 	 * Unlock the app and bring the Talk window back
 	 */
 	function unlockApp() {
@@ -428,52 +405,13 @@ app.whenReady().then(async () => {
 	}
 
 	ipcMain.handle('lock:isLocked', () => isLocked())
-	ipcMain.handle('lock:hasCode', () => hasUnlockCode())
-	ipcMain.handle('lock:changeCode', () => openLockSetup())
-	ipcMain.handle('lock:removeCode', async () => {
-		// The code may only be removed by someone already using the unlocked app
-		if (isLocked()) {
-			return false
-		}
-		await removeUnlockCode()
-		return true
-	})
-	ipcMain.handle('lock:lockNow', () => {
-		// Without a way to unlock, the code has to be created first
-		if (!canUnlock()) {
-			openLockSetup()
-			return
-		}
-		lockApp()
-	})
+	ipcMain.handle('lock:canLock', () => canUnlock())
+	ipcMain.handle('lock:lockNow', () => lockApp())
 	ipcMain.handle('lock:getState', () => ({
-		hasCode: hasUnlockCode(),
-		hasBiometrics: systemInfo.hasBiometricUnlock,
 		user: appData.userMetadata?.['display-name'] ?? appData.credentials?.user ?? null,
 	}))
-	ipcMain.handle('lock:setCode', async (event, code) => {
-		// A code may only be set by someone already using the unlocked app
-		if (isLocked()) {
-			return false
-		}
-
-		await setUnlockCode(code)
-		setupWindow?.close()
-		setupWindow = undefined
-		lockApp()
-		return true
-	})
-	ipcMain.handle('lock:cancelSetup', () => {
-		setupWindow?.close()
-		setupWindow = undefined
-	})
-	ipcMain.handle('lock:verifyCode', async (event, code) => {
-		const isValid = await verifyUnlockCode(code)
-		if (isValid) {
-			unlockApp()
-		}
-		return isValid
-	})
+	// Touch ID is set up in the system, not in this app
+	ipcMain.handle('lock:openBiometricSettings', () => shell.openExternal('x-apple.systempreferences:com.apple.Touch-ID-Settings.extension'))
 	ipcMain.handle('lock:unlockWithBiometrics', async () => {
 		const isUnlocked = await unlockWithBiometrics()
 		if (isUnlocked) {

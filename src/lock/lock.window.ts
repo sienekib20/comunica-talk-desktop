@@ -12,11 +12,10 @@ import { getBrowserWindowIcon } from '../shared/icons.utils.js'
  * Creates the lock screen window
  *
  * @param options - Options
- * @param options.setup - Ask to create an unlock code instead of asking to unlock.
  *                        Only ever used while the app is unlocked and the user is present.
  * @param options.parentWindow - Window to center on
  */
-export function createLockWindow({ setup = false, parentWindow = undefined } = {}) {
+export function createLockWindow({ parentWindow = undefined } = {}) {
 	const zoomFactor = getAppConfig('zoomFactor')
 	const window = new BrowserWindow({
 		...getScaledWindowSize({
@@ -45,7 +44,7 @@ export function createLockWindow({ setup = false, parentWindow = undefined } = {
 	// Opens over the window it belongs to, not in the middle of the screen
 	centerOnParent(window, parentWindow)
 	applyZoom(window)
-	window.loadURL(getWindowUrl('lock') + (setup ? '?setup' : ''))
+	window.loadURL(getWindowUrl('lock'))
 
 	return window
 }
