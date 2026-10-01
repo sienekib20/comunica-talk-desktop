@@ -22,25 +22,31 @@ const genId = () => Math.random().toString(36).slice(2, 9)
  */
 const CLICK_LOGIN_BUTTON = `
 	(async () => {
+		// Only what the user could click themselves. These pages carry hidden forms,
+		// and clicking one of those looks like success while nothing happens.
+		const isVisible = (element) => element.getClientRects().length > 0
+
 		const selectors = [
+			'a[href*="login/flow/grant"]',
 			'#submit-wrapper input[type="submit"]',
 			'form[action*="login/flow"] [type="submit"]',
 			'.button-vue--vue-primary',
 			'form [type="submit"]',
 		]
+
 		// The page is rendered by Vue, the button does not exist yet when the page is loaded
 		const deadline = Date.now() + 5000
 		while (Date.now() < deadline) {
 			for (const selector of selectors) {
-				const element = document.querySelector(selector)
+				const element = [...document.querySelectorAll(selector)].find(isVisible)
 				if (element) {
 					element.click()
-					return true
+					return selector
 				}
 			}
 			await new Promise((resolve) => setTimeout(resolve, 100))
 		}
-		return false
+		return null
 	})()
 `
 
@@ -203,11 +209,22 @@ function openLoginWebView(parentWindow, serverUrl, options = {}) {
 					window.hide()
 				}
 
-				const clicked = await window.webContents.executeJavaScript(CLICK_LOGIN_BUTTON).catch(() => false)
+				const clicked = await window.webContents.executeJavaScript(CLICK_LOGIN_BUTTON).catch(() => null)
+
 				// Nothing to click means the page is not the expected one - show it as is
 				if (!clicked) {
 					showLoginPage()
+					return
 				}
+
+				// The click should send the browser on to the app. If it did not, the page is
+				// still here and the user is left staring at a window they cannot see - show it.
+				const urlWhenClicked = window.webContents.getURL()
+				setTimeout(() => {
+					if (!window.isDestroyed() && window.webContents.getURL() === urlWhenClicked) {
+						showLoginPage()
+					}
+				}, 6000)
 			})
 
 			// Never leave the user on the splash screen if the login page does not load
