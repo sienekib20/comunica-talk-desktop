@@ -12,11 +12,11 @@
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>
 
-	<!-- Talks to the Nextcloud server and to the signalling and TURN servers -->
+	<!-- Talks to the Nextcloud server, and to the signalling and TURN servers that
+	     carry the calls. Every connection is opened by the app, so the matching
+	     "network.server" entitlement is deliberately absent: App Review rejects it
+	     as unused, and media that cannot go peer to peer is relayed through TURN -->
 	<key>com.apple.security.network.client</key>
-	<true/>
-	<!-- Calls receive connections directly from other participants -->
-	<key>com.apple.security.network.server</key>
 	<true/>
 
 	<!-- Calls -->
