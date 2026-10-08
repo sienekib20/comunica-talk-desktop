@@ -1,0 +1,3 @@
+include:
+  - project: pipeline-seguranca/ci-templates
+    file: security.yml
