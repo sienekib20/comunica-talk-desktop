@@ -1,0 +1,68 @@
+diff --git a/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue b/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue
+index 1fab21db5..b18b8ff3e 100644
+--- a/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue
++++ b/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue
+@@ -710,8 +710,9 @@ export default {
+ 		},
+ 
+ 		canForwardMessage() {
++			// A shared file is forwarded by re-sharing it into the target conversation,
++			// which only works when the sender can share it on
+ 			return !this.isCurrentGuest
+-				&& !this.isFileShare
+ 				&& !this.isDeletedMessage
+ 				&& !this.isPollMessage
+ 				&& !this.isClassified
+diff --git a/src/store/messagesStore.js b/src/store/messagesStore.js
+index 6b377c69f..f584729d3 100644
+--- a/src/store/messagesStore.js
++++ b/src/store/messagesStore.js
+@@ -16,6 +16,7 @@ import {
+ } from '../constants.ts'
+ import { hasTalkFeature } from '../services/CapabilitiesManager.ts'
+ import { fetchNoteToSelfConversation } from '../services/conversationsService.ts'
++import { shareFile } from '../services/filesSharingServices.ts'
+ import { EventBus } from '../services/EventBus.ts'
+ import {
+ 	deleteMessage,
+@@ -38,7 +39,7 @@ import { useSharedItemsStore } from '../stores/sharedItems.ts'
+ import CancelableRequest from '../utils/CancelableRequest.ts'
+ import { debugTimer } from '../utils/debugTimer.ts'
+ import { convertToUnix } from '../utils/formattedTime.ts'
+-import { isHiddenSystemMessage, isTemporaryId } from '../utils/message.ts'
++import { getFileKeys, hasOnlyFilePlaceholders, isHiddenSystemMessage, isTemporaryId } from '../utils/message.ts'
+ 
+ /**
+  * Returns whether the given message contains a mention to self, directly
+@@ -1422,6 +1423,31 @@ const actions = {
+ 			delete message.parent
+ 		}
+ 
++		// A message that shares files is forwarded by sharing each of them into the
++		// target conversation, the way the file picker does. The caption travels with
++		// the last one, as it does when files are uploaded together.
++		const fileKeys = getFileKeys(message)
++		if (fileKeys.length > 0) {
++			const caption = hasOnlyFilePlaceholders(message.message) ? '' : message.message
++			let response
++			for (const [index, key] of fileKeys.entries()) {
++				const path = message.messageParameters[key]?.path
++				if (!path) {
++					// The file is not reachable in this user's own storage, so there is
++					// nothing that can be shared on
++					throw new Error('The shared file cannot be forwarded')
++				}
++				const isLast = index === fileKeys.length - 1
++				response = await shareFile({
++					path,
++					shareWith: targetToken,
++					referenceId: '',
++					talkMetaData: JSON.stringify(caption && isLast ? { caption } : {}),
++				})
++			}
++			return response
++		}
++
+ 		if (message.messageParameters?.object) {
+ 			const richObject = message.messageParameters.object
+ 			const response = await postRichObjectToConversation(

@@ -10,7 +10,7 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -67,6 +67,42 @@ function setupTalk() {
 }
 
 /**
+ * Apply this app's patches to the Nextcloud Talk clone.
+ *
+ * They change code this project does not own, so they live here as patch files
+ * rather than as edits to the clone: the clone is replaced wholesale whenever
+ * Talk is upgraded. A patch that no longer applies stops the setup with the
+ * name of the file, which is the moment to rewrite it against the new Talk.
+ */
+function patchTalk() {
+	if (process.env.TALK_PATH) {
+		console.log('Using Nextcloud Talk from TALK_PATH - skipping the patches')
+		return
+	}
+
+	const patchesPath = join(ROOT, 'patches')
+	if (!existsSync(patchesPath)) {
+		return
+	}
+
+	const patches = readdirSync(patchesPath).filter((name) => name.endsWith('.patch')).sort()
+	for (const patch of patches) {
+		const patchFile = join(patchesPath, patch)
+		// Already applied, which is the normal case for a clone that is already set up
+		try {
+			execFileSync('git', ['apply', '--reverse', '--check', patchFile], { cwd: TALK_PATH, stdio: 'ignore' })
+			console.log(`Patch ${patch} is already applied`)
+			continue
+		} catch {
+			// Not applied yet - fall through and apply it
+		}
+
+		console.log(`Applying ${patch}...`)
+		run('git', ['apply', patchFile], TALK_PATH)
+	}
+}
+
+/**
  * The Electron binary is downloaded by an install script, which npm may skip
  */
 function setupElectron() {
@@ -106,6 +142,7 @@ function nameDevelopmentBundle() {
 }
 
 setupTalk()
+patchTalk()
 run('npm', ['ci', '--prefix', TALK_PATH])
 setupElectron()
 nameDevelopmentBundle()
