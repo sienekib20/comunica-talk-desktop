@@ -74,6 +74,13 @@ export type BuildConfigFile = {
 	privacyUrl: string
 
 	/**
+	 * GitHub repository ("owner/name") whose releases the app checks for a newer version.
+	 * Its release assets must be named like the installers this build makes, e.g. Talk.Gov.ao-macos-arm64.dmg.
+	 * Default: 'nextcloud-releases/talk-desktop'
+	 */
+	updateRepository: string
+
+	/**
 	 * Theming primary color
 	 * Default: '#00679e'
 	 */

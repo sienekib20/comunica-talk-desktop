@@ -6,6 +6,7 @@
 <script setup lang="ts">
 import { provide, ref } from 'vue'
 import AppWindow from '../../shared/components/AppWindow.vue'
+import NavRail from './NavRail/NavRail.vue'
 import TalkWrapper from './TalkWrapper/TalkWrapper.vue'
 import TitleBar from './TitleBar/TitleBar.vue'
 import { useNotificationsStore } from './notifications/notifications.store.js'
@@ -35,6 +36,7 @@ document.body.appendChild(document.createElement('div'))
 	<AppWindow>
 		<div id="skip-actions" />
 		<TitleBar id="header" />
+		<NavRail v-if="isTalkInitialized" />
 		<TalkWrapper @ready="isTalkInitialized = true" />
 	</AppWindow>
 </template>

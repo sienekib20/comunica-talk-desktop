@@ -103,11 +103,19 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: ${{ matrix.build }}
 
+      # The app and file names come from applicationName in .overrides/build.config.json
+      - name: Read the application name
+        if: matrix.os == 'macos-latest'
+        run: |
+          NAME=$(node -p "require('./.overrides/build.config.json').applicationName")
+          echo "APP_NAME=$NAME" >> "$GITHUB_ENV"
+          echo "DIST_NAME=$(echo "$NAME" | sed 's/[^A-Za-z0-9]/./g')" >> "$GITHUB_ENV"
+
       # Without a Developer ID, a local signature at least avoids the
       # "app is damaged" message that Apple Silicon shows for unsigned binaries
       - name: Sign the app locally
         if: matrix.os == 'macos-latest' && env.MACOS_CERTIFICATE == ''
-        run: codesign --force --deep --sign - "out/Talk-darwin-arm64/Talk.app"
+        run: codesign --force --deep --sign - "out/${APP_NAME}-darwin-arm64/${APP_NAME}.app"
 
       - name: Create the installers
         run: ${{ matrix.package }}
@@ -119,8 +127,8 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           productbuild \
-            --component "out/Talk-darwin-arm64/Talk.app" /Applications \
-            "out/make/Talk-macos-arm64.pkg"
+            --component "out/${APP_NAME}-darwin-arm64/${APP_NAME}.app" /Applications \
+            "out/make/${DIST_NAME}-macos-arm64.pkg"
 
       - name: Collect the installers
         uses: actions/upload-artifact@v4

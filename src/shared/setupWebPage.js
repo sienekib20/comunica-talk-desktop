@@ -8,6 +8,7 @@ import { isRTL, register, setLanguage, setLocale } from '@nextcloud/l10n'
 import { appData } from '../app/AppData.js'
 import { refetchAppData } from '../app/appData.service.js'
 import { TITLE_BAR_HEIGHT } from '../constants.js'
+import { cleanDisplayName } from '../talk/renderer/utils/cleanDisplayNames.ts'
 import { initAppConfig } from './appConfig.service.ts'
 import { BUILD_CONFIG } from './build.config.ts'
 import { initGlobals } from './globals/globals.js'
@@ -93,7 +94,7 @@ async function applyUserData() {
 	// Current user metadata had different property name for display name than userMetadata
 	// Remove if Nextcloud 27 is not supported
 	// @see https://github.com/nextcloud/server/pull/36665
-	document.head.setAttribute('data-user-displayname', appData.userMetadata.displayname ?? appData.userMetadata['display-name'])
+	document.head.setAttribute('data-user-displayname', cleanDisplayName(appData.userMetadata.displayname ?? appData.userMetadata['display-name'] ?? ''))
 
 	// getCurrentUser().isAdmin
 	window._oc_isadmin = appData.userMetadata.groups.includes('admin')

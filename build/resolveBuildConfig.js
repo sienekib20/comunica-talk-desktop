@@ -50,6 +50,12 @@ function resolveBuildConfig() {
 		? new URL(buildConfig.domain).host.split('.').reverse().join('.')
 		: 'com.nextcloud'
 
+	// Point a local build at another server (e.g. TALK_DOMAIN=https://dev.gov.ao) without
+	// touching the versioned config. Applied after appIdHost so the bundle ids stay the same.
+	if (process.env.TALK_DOMAIN) {
+		buildConfig.domain = new URL(process.env.TALK_DOMAIN).origin
+	}
+
 	return {
 		// Default inferred values - can be overridden by the custom config
 		appleAppBundleId: `${appIdHost}.talk.mac`,

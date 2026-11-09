@@ -1,0 +1,27 @@
+diff --git a/src/components/ChatView.vue b/src/components/ChatView.vue
+index 5a3b5cc..181c8e4 100644
+--- a/src/components/ChatView.vue
++++ b/src/components/ChatView.vue
+@@ -230,7 +230,7 @@ export default {
+ 			} else {
+ 				// If the hash is already empty, simply scroll to the bottom
+ 				EventBus.emit('set-context-id-to-bottom')
+-				EventBus.emit('scroll-chat-to-bottom', { smooth: false, force: true })
++				EventBus.emit('scroll-chat-to-bottom', { smooth: true, force: true })
+ 			}
+ 		},
+ 	},
+diff --git a/src/components/MessagesList/MessagesList.vue b/src/components/MessagesList/MessagesList.vue
+index 17a4a7a..3ee74e7 100644
+--- a/src/components/MessagesList/MessagesList.vue
++++ b/src/components/MessagesList/MessagesList.vue
+@@ -656,7 +656,8 @@ export default {
+ 			let isFocused = null
+ 			if (focusMessageId) {
+ 				// scroll to message in URL anchor
+-				this.focusMessage({ messageId: focusMessageId, smooth: false, highlight: true })
++				// Glide to a message the user asked for (a quote, a search result, a link)
++				this.focusMessage({ messageId: focusMessageId, smooth: true, highlight: true })
+ 				return
+ 			}
+ 

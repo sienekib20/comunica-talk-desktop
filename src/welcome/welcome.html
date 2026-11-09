@@ -19,62 +19,77 @@
 		height: 100vh;
 		background: transparent;
 		color: #fff;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 		user-select: none;
 		-webkit-app-region: drag;
 		overflow: hidden;
+		-webkit-font-smoothing: antialiased;
 	}
 
 	/* The whole splash is one rounded card - the window itself is frameless and transparent */
 	.splash {
 		position: relative;
 		height: 100vh;
-		border-radius: 20px;
+		border-radius: 22px;
 		overflow: hidden;
+		isolation: isolate;
 		background:
-			radial-gradient(120% 90% at 15% 0%, #4a9de0 0%, transparent 55%),
-			radial-gradient(120% 120% at 100% 100%, #1b5892 0%, transparent 60%),
-			linear-gradient(155deg, #2e70b0 0%, #17497c 100%);
+			radial-gradient(120% 90% at 12% 0%, rgba(124, 196, 255, 0.55) 0%, transparent 58%),
+			radial-gradient(110% 100% at 100% 100%, rgba(10, 40, 76, 0.75) 0%, transparent 62%),
+			linear-gradient(160deg, #2e70b0 0%, #1b528a 100%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 	}
 
-	/* Slowly drifting light blobs give the flat gradient some depth */
+	/* A hairline of light along the edge, and a fine grain so the gradient does not band */
+	.splash::before,
+	.splash::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.splash::before {
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+		z-index: 2;
+	}
+
+	.splash::after {
+		opacity: 0.07;
+		mix-blend-mode: overlay;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+		z-index: 1;
+	}
+
+	/* Slowly drifting light gives the gradient some depth */
 	.aura {
 		position: absolute;
 		border-radius: 50%;
-		filter: blur(42px);
-		opacity: 0.55;
-		animation: drift 14s ease-in-out infinite alternate;
+		filter: blur(48px);
+		opacity: 0.5;
+		animation: drift 16s ease-in-out infinite alternate;
+		z-index: -1;
 	}
 
 	.aura--one {
-		width: 260px;
-		height: 260px;
+		width: 280px;
+		height: 280px;
 		background: #7cc4ff;
-		inset-block-start: -90px;
-		inset-inline-start: -70px;
+		inset-block-start: -110px;
+		inset-inline-start: -80px;
 	}
 
 	.aura--two {
-		width: 220px;
-		height: 220px;
-		background: #1e63a8;
-		inset-block-end: -80px;
-		inset-inline-end: -60px;
-		animation-delay: -5s;
-	}
-
-	.aura--three {
-		width: 160px;
-		height: 160px;
-		background: #9fd6ff;
-		inset-block-end: 40px;
-		inset-inline-start: 30px;
-		opacity: 0.25;
-		animation-delay: -9s;
+		width: 240px;
+		height: 240px;
+		background: #0f3a66;
+		inset-block-end: -100px;
+		inset-inline-end: -70px;
+		animation-delay: -6s;
 	}
 
 	@keyframes drift {
@@ -82,21 +97,38 @@
 			transform: translate3d(0, 0, 0) scale(1);
 		}
 		to {
-			transform: translate3d(24px, -18px, 0) scale(1.12);
+			transform: translate3d(26px, -18px, 0) scale(1.12);
 		}
 	}
 
+	.content {
+		position: relative;
+		z-index: 3;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
 	.logo {
-		width: 260px;
-		max-width: 68%;
-		filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.28));
+		width: 210px;
+		max-width: 60%;
+		filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.28));
 		animation: rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.name {
+		margin-block-start: 14px;
+		font-size: 17px;
+		font-weight: 600;
+		letter-spacing: 0.005em;
+		opacity: 0.95;
+		animation: rise 900ms 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	@keyframes rise {
 		from {
 			opacity: 0;
-			transform: translateY(14px) scale(0.94);
+			transform: translateY(12px) scale(0.96);
 		}
 		to {
 			opacity: 1;
@@ -104,69 +136,82 @@
 		}
 	}
 
-	/* Indeterminate progress - the app is loading, the duration is unknown */
+	/* What the app is doing right now, under an indeterminate progress line */
 	.progress {
 		position: relative;
-		width: 148px;
+		width: 136px;
 		height: 3px;
-		margin-block-start: 34px;
+		margin-block-start: 30px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.22);
+		background: rgba(255, 255, 255, 0.2);
 		overflow: hidden;
-		animation: fade-in 600ms 400ms ease both;
+		animation: fade-in 500ms 350ms ease both;
 	}
 
 	.progress::after {
 		content: '';
 		position: absolute;
 		inset-block: 0;
-		inline-size: 45%;
+		inline-size: 40%;
 		border-radius: inherit;
-		background: #fff;
-		animation: slide 1.4s ease-in-out infinite;
+		background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #fff 50%, rgba(255, 255, 255, 0) 100%);
+		animation: slide 1.3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 	}
 
 	@keyframes slide {
 		from {
-			inset-inline-start: -45%;
+			inset-inline-start: -40%;
 		}
 		to {
 			inset-inline-start: 100%;
 		}
 	}
 
+	.status {
+		min-height: 16px;
+		margin-block-start: 12px;
+		font-size: 12px;
+		opacity: 0.75;
+		transition: opacity 200ms ease;
+		animation: fade-in 500ms 350ms ease both;
+	}
+
+	.status--changing {
+		opacity: 0;
+	}
+
 	@keyframes fade-in {
 		from {
 			opacity: 0;
-		}
-		to {
-			opacity: 1;
 		}
 	}
 
 	.footer {
 		position: absolute;
+		z-index: 3;
 		inset-block-end: 14px;
 		inset-inline: 0;
 		text-align: center;
-		font-size: 11px;
-		letter-spacing: 0.02em;
-		opacity: 0.65;
+		font-size: 10.5px;
+		letter-spacing: 0.04em;
+		opacity: 0.5;
 	}
 
 	.quit {
 		-webkit-app-region: no-drag;
 		position: absolute;
-		inset-block-start: 8px;
-		inset-inline-end: 8px;
-		width: 32px;
-		height: 32px;
+		z-index: 4;
+		inset-block-start: 10px;
+		inset-inline-end: 10px;
+		width: 30px;
+		height: 30px;
 		border: none;
 		border-radius: 50%;
 		background: transparent var(--original-icon-close-white) no-repeat center;
-		background-size: 16px;
-		opacity: 0.6;
+		background-size: 14px;
+		opacity: 0.55;
 		cursor: pointer;
+		transition: opacity 120ms ease, background-color 120ms ease;
 	}
 
 	.quit:hover {
@@ -174,8 +219,20 @@
 		background-color: rgba(255, 255, 255, 0.16);
 	}
 
+	/* The button gets focus when the splash opens: no ring for that, only for the keyboard */
+	.quit:focus {
+		outline: none;
+		box-shadow: none;
+	}
+
+	.quit:focus-visible {
+		opacity: 1;
+		outline: 2px solid rgba(255, 255, 255, 0.7);
+		outline-offset: 1px;
+	}
+
 	.quit_mac {
-		inset-inline-start: 8px;
+		inset-inline-start: 10px;
 		inset-inline-end: auto;
 	}
 
@@ -185,11 +242,11 @@
 
 	/* Respect the system setting for users sensitive to motion */
 	@media (prefers-reduced-motion: reduce) {
-		.aura,
-		.logo,
-		.progress,
-		.progress::after {
-			animation: none;
+		*,
+		*::before,
+		*::after {
+			animation: none !important;
+			transition: none !important;
 		}
 	}
 	</style>
@@ -198,12 +255,15 @@
 	<div class="splash">
 		<div class="aura aura--one"></div>
 		<div class="aura aura--two"></div>
-		<div class="aura aura--three"></div>
 
-		<button class="quit hidden" aria-label="Quit" type="button"></button>
+		<button class="quit hidden" aria-label="Sair" title="Sair" type="button"></button>
 
-		<img class="logo" src="<%= require('../../img/govao-logo.png') %>" alt="" />
-		<div class="progress"></div>
+		<div class="content">
+			<img class="logo" src="<%= require('../../img/govao-logo.png') %>" alt="" />
+			<div class="name"></div>
+			<div class="progress"></div>
+			<div class="status" role="status">A iniciar…</div>
+		</div>
 
 		<div class="footer"></div>
 	</div>

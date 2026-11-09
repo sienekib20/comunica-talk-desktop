@@ -1,0 +1,2370 @@
+/*!
+ * SPDX-FileCopyrightText: 2026 Talk Gov.ao
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*
+ * Talk Gov.ao look: light and airy.
+ * - a soft pastel gradient behind everything
+ * - a navigation rail of white round buttons, the active one black (NavRail.vue)
+ * - conversations as separate white cards with large radii and soft shadows
+ * - the chat inside a large white card; grey incoming and black outgoing bubbles
+ * - white pill buttons, black as the accent, the Inter typeface
+ *
+ * It restyles the markup Talk already renders. Talk's component styles are scoped
+ * (.class[data-v-xxx]), which is why many rules here need !important to win over them.
+ * Change the look from the tokens below.
+ */
+
+/* ================================================================ Tokens */
+
+:root {
+	--tg-font: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+
+	--tg-gap: 14px;
+	--tg-rail-width: 64px;
+	--tg-radius-xl: 32px;
+	--tg-radius-l: 26px;
+	--tg-radius-m: 16px;
+
+	--tg-backdrop: linear-gradient(135deg, #d3e6f4 0%, #e9eef3 42%, #f1ebe6 72%, #efe7e4 100%);
+	--tg-card: #ffffff;
+	--tg-card-glass: rgba(255, 255, 255, 0.55);
+	--tg-soft: #f4f5f7;
+	--tg-soft-hover: #eceef1;
+	--tg-line: #eceef1;
+	--tg-text: #111111;
+	--tg-text-mid: #5c6066;
+	--tg-text-soft: #9a9ea5;
+	--tg-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 30px rgba(16, 24, 40, 0.06);
+	--tg-shadow-strong: 0 2px 4px rgba(16, 24, 40, 0.05), 0 16px 40px rgba(16, 24, 40, 0.09);
+
+	--tg-accent: #2f74d0;
+	--tg-accent-hover: #2664b8;
+	--tg-accent-soft: #e8f1fc;
+	--tg-accent-text: #1f5fb4;
+	--tg-on-accent: #ffffff;
+	--tg-danger: #ef4c4c;
+	--tg-highlight: #7fb2f0;
+
+	--tg-bubble-in: #f4f5f7;
+	--tg-bubble-in-text: #111111;
+	--tg-bubble-out: #2f74d0;
+	--tg-bubble-out-text: #ffffff;
+	--tg-bubble-out-meta: #cfe1f7;
+	--tg-read: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--tg-backdrop: linear-gradient(135deg, #10202c 0%, #15191e 45%, #1c1916 100%);
+		--tg-card: #1a1c1f;
+		--tg-card-glass: rgba(26, 28, 31, 0.6);
+		--tg-soft: #24272b;
+		--tg-soft-hover: #2c3035;
+		--tg-line: #2a2d31;
+		--tg-text: #f2f3f5;
+		--tg-text-mid: #b4b8bf;
+		--tg-text-soft: #7d828a;
+		--tg-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
+		--tg-shadow-strong: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.35);
+
+		--tg-accent: #4f8fe3;
+		--tg-accent-hover: #6aa3ec;
+		--tg-accent-soft: rgba(79, 143, 227, 0.16);
+		--tg-accent-text: #8cb8f2;
+		--tg-on-accent: #ffffff;
+
+		--tg-bubble-in: #24272b;
+		--tg-bubble-in-text: #f2f3f5;
+		--tg-bubble-out: #2f6cc0;
+		--tg-bubble-out-text: #ffffff;
+		--tg-bubble-out-meta: #c3d8f3;
+		--tg-read: #ffffff;
+	}
+}
+
+/* The accent colour for buttons, links and highlights */
+body {
+	--font-face: var(--tg-font) !important;
+	--color-main-background: var(--tg-card) !important;
+	--color-primary-element: var(--tg-accent) !important;
+	--color-primary-element-hover: var(--tg-accent-hover) !important;
+	--color-primary-element-text: var(--tg-on-accent) !important;
+	--color-primary-element-text-dark: var(--tg-on-accent) !important;
+	--color-primary-element-light: var(--tg-accent-soft) !important;
+	--color-primary-element-light-hover: var(--tg-accent-soft) !important;
+	--color-primary-element-light-text: var(--tg-accent-text) !important;
+	--color-primary: var(--tg-accent) !important;
+	--color-primary-text: var(--tg-on-accent) !important;
+	--color-primary-light: var(--tg-soft) !important;
+	--color-primary-light-hover: var(--tg-soft-hover) !important;
+	--color-primary-light-text: var(--tg-text) !important;
+	font-family: var(--tg-font) !important;
+	background: var(--tg-backdrop) !important;
+	background-attachment: fixed !important;
+	letter-spacing: -0.005em;
+}
+
+body,
+body button,
+body input,
+body textarea,
+body [contenteditable] {
+	font-family: var(--tg-font) !important;
+}
+
+/* ================================================================ Window layout */
+
+#header.title-bar {
+	background: transparent;
+	color: var(--tg-text);
+}
+
+#content {
+	margin-inline-start: calc(var(--tg-gap) + var(--tg-rail-width)) !important;
+	width: calc(100% - var(--tg-rail-width) - 2 * var(--tg-gap)) !important;
+	background: transparent !important;
+}
+
+/* Talk positions its content as fixed and viewport-wide: fit it between the rail and the edges */
+#content-vue {
+	width: calc(100% - var(--tg-rail-width) - 2 * var(--tg-gap)) !important;
+	max-width: calc(100% - var(--tg-rail-width) - 2 * var(--tg-gap)) !important;
+	height: calc(100% - var(--header-height) - var(--tg-gap)) !important;
+	background: transparent !important;
+}
+
+#app-content-vue {
+	margin-inline-start: var(--tg-gap);
+	background: transparent !important;
+}
+
+/* The chat: a large white card */
+.main-view {
+	height: 100%;
+	background: var(--tg-card) !important;
+	border-radius: var(--tg-radius-xl);
+	box-shadow: var(--tg-shadow);
+	overflow: hidden;
+}
+
+/* Right sidebar (participants, shared items) as its own card */
+.app-sidebar {
+	margin-inline-start: var(--tg-gap);
+	border: none !important;
+	border-radius: var(--tg-radius-xl);
+	box-shadow: var(--tg-shadow);
+	overflow: hidden;
+	background: var(--tg-card) !important;
+}
+
+/* ================================================================ Conversations column */
+
+.app-navigation {
+	--color-background-hover: var(--tg-soft);
+	--color-primary-element-light: var(--tg-card);
+	--color-primary-element-light-hover: var(--tg-card);
+	--color-primary-element-light-text: var(--tg-text);
+	background: transparent !important;
+	border: none !important;
+}
+
+#app-navigation-vue {
+	background: transparent !important;
+	backdrop-filter: none !important;
+}
+
+.app-navigation__search,
+.app-navigation__search .navigation-top {
+	height: auto !important;
+	overflow: visible !important;
+	background: transparent !important;
+}
+
+/* Talk's Home / Threads / Archived / App settings rows are replaced by the navigation rail */
+#app-navigation-vue .navigation-buttons-container:not(:has(.new-conversation)) {
+	display: none !important;
+}
+
+.new-conversation {
+	padding: 4px 4px 10px !important;
+	gap: 8px !important;
+}
+
+/* Search: a white pill. Sized through Nextcloud's own variable so the icon stays centred */
+.new-conversation {
+	--default-clickable-area: 48px;
+	align-items: center;
+}
+
+.conversations-search .input-field__input {
+	border: none !important;
+	border-radius: 24px !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow) !important;
+	font-size: 14.5px !important;
+}
+
+.conversations-search .input-field__icon--leading {
+	inset-inline-start: 6px !important;
+}
+
+/* Filter and new-conversation buttons: white circles */
+.new-conversation > .action-item .button-vue,
+.new-conversation .action-item__menutoggle {
+	--button-size: 48px;
+	width: 48px !important;
+	height: 48px !important;
+	border: none !important;
+	border-radius: 50% !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow) !important;
+	color: var(--tg-text) !important;
+}
+
+/* The whole list sits in one white card */
+.app-navigation__list {
+	margin: 0 4px !important;
+	padding: 8px 6px !important;
+	border-radius: var(--tg-radius-l);
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow);
+	box-sizing: border-box;
+}
+
+/* Section captions ("Favoritos", "Outro") */
+.app-navigation__list .app-navigation-entry-wrapper > .app-navigation-entry {
+	min-height: 32px !important;
+	height: 32px !important;
+	margin-block: 6px 2px;
+	padding-inline: 6px;
+	background: transparent !important;
+}
+
+.app-navigation__list .app-navigation-entry__name {
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.02em;
+	color: var(--tg-text-soft) !important;
+}
+
+/* Rows */
+.conversation {
+	padding-inline: 0 !important;
+}
+
+.conversation .list-item {
+	width: 100% !important;
+	box-sizing: border-box;
+	margin: 1px 0 !important;
+	border-radius: var(--tg-radius-m) !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	transition: background-color 120ms ease;
+}
+
+.conversation .list-item:hover {
+	background: var(--tg-soft) !important;
+}
+
+/* The open conversation: a soft accent background and accent name */
+.conversation.list-item__wrapper--active .list-item,
+.conversation .list-item--active {
+	background: var(--tg-accent-soft) !important;
+}
+
+.conversation.list-item__wrapper--active .list-item-content__name,
+.conversation .list-item--active .list-item-content__name {
+	color: var(--tg-accent-text) !important;
+}
+
+/* Talk's virtual list gives each row a fixed height (32px compact, 52px normal),
+   so the rows' padding has to fit inside it */
+.conversation--compact .list-item {
+	padding: 2px 10px !important;
+}
+
+.conversation:not(.conversation--compact) .list-item {
+	padding: 4px 10px !important;
+}
+
+.conversation .list-item-content {
+	padding-inline-start: 10px !important;
+}
+
+.conversation .list-item-content__name {
+	font-size: 14.5px;
+	font-weight: 500;
+	color: var(--tg-text) !important;
+}
+
+.conversation .list-item--compact .list-item-content__name,
+.conversation .list-item[class*='bold'] .list-item-content__name {
+	font-weight: 600;
+}
+
+.conversation__subname {
+	font-size: 13px;
+	color: var(--tg-text-soft) !important;
+}
+
+.conversation__subname-actor {
+	color: var(--tg-text-mid);
+}
+
+.conversation__subname-actor::after {
+	content: ':';
+}
+
+.conversation .list-item-content__details,
+.conversation .list-item-details__details {
+	color: var(--tg-text-soft) !important;
+	font-size: 12px !important;
+}
+
+/* The actions button: a small outlined circle, only on hover or on the open row */
+.conversation .action-item__menutoggle {
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 50% !important;
+	background: var(--tg-card) !important;
+}
+
+/* Unread counter: accent pill */
+.conversation .counter-bubble__counter {
+	border: none !important;
+	background: var(--tg-accent) !important;
+	color: var(--tg-on-accent) !important;
+	font-weight: 600;
+}
+
+/* ================================================================ Conversation header */
+
+.top-bar {
+	height: 64px !important;
+	min-height: 64px !important;
+	flex-wrap: nowrap !important;
+	padding-inline: 20px !important;
+	background: var(--tg-card) !important;
+	border-bottom: 1px solid var(--tg-line) !important;
+}
+
+.top-bar .conversation-header .title {
+	font-size: 19px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	color: var(--tg-text);
+}
+
+.top-bar .conversation-header .description {
+	color: var(--tg-text-soft) !important;
+	font-size: 13px;
+}
+
+.top-bar__icon-wrapper .avatar,
+.top-bar__icon-wrapper .conversation-icon {
+	width: 44px !important;
+	height: 44px !important;
+}
+
+.top-bar .conversation-header {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.top-bar .conversation-header .title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.top-bar__controls {
+	flex-wrap: nowrap !important;
+	flex-shrink: 0;
+	gap: 10px !important;
+	/* Leave room for Talk's sidebar toggle, which floats over the top-right corner */
+	padding-inline-end: 52px;
+}
+
+/* Header buttons: white circles with a hairline border; the call button black */
+.top-bar__controls .button-vue {
+	--button-size: 40px;
+	flex-shrink: 0;
+	min-width: 40px !important;
+	width: 40px !important;
+	height: 40px !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 50% !important;
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+}
+
+.top-bar__controls .button-vue:hover {
+	background: var(--tg-soft) !important;
+}
+
+.top-bar__controls .button-vue__wrapper {
+	justify-content: center;
+	padding: 0 !important;
+}
+
+.top-bar .join-call {
+	border-color: var(--tg-accent) !important;
+	background: var(--tg-accent) !important;
+	color: var(--tg-on-accent) !important;
+}
+
+.top-bar .join-call:hover {
+	background: var(--tg-accent-hover) !important;
+}
+
+/* The call button label stays for screen readers only */
+.top-bar .join-call .button-vue__text {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
+
+/* ================================================================ Chat */
+
+.chatView {
+	background: var(--tg-card) !important;
+}
+
+.chatView .scroller__content {
+	padding-inline: 16px 24px !important;
+}
+
+/* Composer: a soft grey box with round buttons, like a reply area */
+.chatView .wrapper:has(.new-message-form) {
+	background: var(--tg-card) !important;
+	padding: 10px 20px 20px !important;
+}
+
+.new-message-form {
+	align-items: center !important;
+	padding: 8px;
+	border-radius: var(--tg-radius-l);
+	background: var(--tg-soft);
+}
+
+.new-message-form .rich-contenteditable__input {
+	min-height: 44px !important;
+	border: none !important;
+	border-radius: 22px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	padding-block: 11px !important;
+	font-size: 15px;
+}
+
+.new-message-form .rich-contenteditable__input:focus,
+.new-message-form .rich-contenteditable__input:focus-visible {
+	box-shadow: none !important;
+}
+
+.new-message-form:focus-within {
+	box-shadow: 0 0 0 1.5px var(--tg-line);
+}
+
+.new-message-form__emoji-picker {
+	bottom: 7px !important;
+	inset-inline-start: 6px !important;
+}
+
+.new-message-form > .action-item .button-vue,
+.new-message-form .audio-recorder .button-vue,
+.new-message-form button[type='submit'] {
+	--button-size: 44px;
+	width: 44px !important;
+	height: 44px !important;
+	border: none !important;
+	border-radius: 50% !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow);
+	color: var(--tg-text) !important;
+}
+
+.new-message-form button[type='submit']:not([disabled]),
+.new-message-form .audio-recorder .button-vue {
+	background: var(--tg-accent) !important;
+	color: var(--tg-on-accent) !important;
+}
+
+/* ================================================================ Message bubbles */
+
+.message--sided {
+	max-width: min(78%, 680px) !important;
+}
+
+.message--sided.message--small-view {
+	max-width: 88% !important;
+}
+
+/* Own messages: no own avatar or name, bubble against the right edge */
+.wrapper.outgoing .messages__avatar-wrapper,
+.wrapper.outgoing .messages__author {
+	display: none !important;
+}
+
+.wrapper.outgoing .messages__content {
+	padding-inline-end: 8px !important;
+}
+
+.message--sided .message-body {
+	border: none !important;
+	border-radius: 22px !important;
+	box-shadow: none !important;
+	padding: 11px 16px 9px !important;
+	font-size: 14.5px;
+	line-height: 1.45;
+}
+
+.message--sided.incoming .message-body {
+	--message-body-hover: var(--tg-soft-hover) !important;
+	background: var(--tg-bubble-in) !important;
+	color: var(--tg-bubble-in-text) !important;
+}
+
+.message--sided.outgoing .message-body {
+	--message-body-hover: var(--tg-bubble-out) !important;
+	background: var(--tg-bubble-out) !important;
+	color: var(--tg-bubble-out-text) !important;
+}
+
+.message--sided.outgoing .message-body a,
+.message--sided.outgoing .message-body .rich-text--wrapper {
+	color: var(--tg-bubble-out-text) !important;
+}
+
+/* Everything inside own bubbles in the bubble's text colour (italics, link previews) */
+.message--sided.outgoing .message-body em,
+.message--sided.outgoing .message-body i,
+.message--sided.outgoing .message-body blockquote,
+.message--sided.outgoing .message-body .widget-default *,
+.message--sided.outgoing .message-body .rich-text--wrapper * {
+	color: inherit !important;
+}
+
+.message--sided.outgoing .message-body .widget-default {
+	border-color: rgba(255, 255, 255, 0.35) !important;
+	background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Mentions inside own (coloured) bubbles */
+.message--sided.outgoing .mention-chip {
+	background: rgba(255, 255, 255, 0.16) !important;
+	color: var(--tg-bubble-out-text) !important;
+}
+
+.message--sided.outgoing .mention-chip .nc-chip__text {
+	color: var(--tg-bubble-out-text) !important;
+}
+
+/* Grouped bubbles: the first one of a group gets a small corner */
+.messages-bubble > li:first-child.outgoing .message-body {
+	border-start-end-radius: 8px !important;
+}
+
+.messages-bubble > li:first-child.incoming .message-body {
+	border-start-start-radius: 8px !important;
+}
+
+.message--sided .message-main__info,
+.message--sided .message-main__info .date,
+.message--sided .message-status {
+	font-size: 11px !important;
+}
+
+.message--sided.incoming .message-main__info,
+.message--sided.incoming .message-main__info .date {
+	color: var(--tg-text-soft) !important;
+}
+
+.message--sided.outgoing .message-main__info,
+.message--sided.outgoing .message-main__info .date,
+.message--sided.outgoing .message-status {
+	color: var(--tg-bubble-out-meta) !important;
+}
+
+.message-status .check-all-icon {
+	color: var(--tg-read) !important;
+}
+
+/* Quotes and link previews inside bubbles */
+.message--sided .quote {
+	border: none !important;
+	border-inline-start: 3px solid var(--tg-highlight) !important;
+	border-radius: var(--tg-radius-m) !important;
+	background: rgba(0, 0, 0, 0.04) !important;
+}
+
+.message--sided.outgoing .quote {
+	background: rgba(255, 255, 255, 0.1) !important;
+	color: var(--tg-bubble-out-text) !important;
+}
+
+.message--sided.outgoing .quote * {
+	color: inherit !important;
+}
+
+/* Author above incoming groups */
+.incoming .messages__author {
+	color: var(--tg-text-mid) !important;
+	font-weight: 500;
+	font-size: 13px;
+}
+
+/* Day separators and the "unread messages" marker as outlined pills */
+.messages-date__text,
+.new-message-marker span {
+	background: var(--tg-card) !important;
+	color: var(--tg-text-mid) !important;
+	border: 1px solid var(--tg-line) !important;
+	box-shadow: none !important;
+	border-radius: 20px !important;
+	padding: 5px 14px !important;
+	font-size: 12px !important;
+	font-weight: 500;
+}
+
+/* ================================================================ Columns and finishing touches */
+
+/* A clear gap between the conversations column and the chat card */
+#app-content-vue {
+	margin-inline-start: var(--tg-gap) !important;
+}
+
+.app-navigation__list {
+	width: auto !important;
+	margin: 0 !important;
+}
+
+/* Search row aligned with the top of the chat card */
+.new-conversation {
+	padding-block-start: 0 !important;
+}
+
+/* Panel toggles (left and right) as soft round buttons, centred in the header */
+.app-navigation-toggle-wrapper {
+	top: 12px !important;
+}
+
+.app-navigation-toggle-wrapper .button-vue,
+#content-vue > .button-vue {
+	width: 40px !important;
+	height: 40px !important;
+	border: none !important;
+	border-radius: 50% !important;
+	background: var(--tg-soft) !important;
+	color: var(--tg-text) !important;
+	outline: none;
+}
+
+#content-vue > .button-vue {
+	top: 12px !important;
+	inset-inline-end: 12px !important;
+}
+
+.app-navigation-toggle-wrapper .button-vue:focus-visible,
+#content-vue > .button-vue:focus-visible {
+	outline: 2px solid var(--tg-accent) !important;
+}
+
+/* Right sidebar: no focus frame around its title when it opens */
+.app-sidebar-header__mainname:focus:not(:focus-visible),
+.app-sidebar-header__mainname-input:focus:not(:focus-visible) {
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.app-sidebar-header__mainname {
+	font-weight: 700;
+	letter-spacing: -0.015em;
+}
+
+/* Message hover toolbar: a floating white pill */
+.message-buttons-bar {
+	border-radius: 999px !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow-strong) !important;
+	padding-inline: 2px;
+}
+
+/* Reactions as soft outlined chips */
+.reaction__button,
+.reactions-item {
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 999px !important;
+	background: var(--tg-card) !important;
+}
+
+/* Quotes in incoming bubbles: white card with an accent bar */
+.message--sided.incoming .quote {
+	background: var(--tg-card) !important;
+	border-inline-start-color: var(--tg-accent) !important;
+}
+
+/* Day pill floats over the messages while scrolling: frosted */
+.messages-date__text {
+	background: rgba(255, 255, 255, 0.85) !important;
+	backdrop-filter: blur(8px);
+}
+
+@media (prefers-color-scheme: dark) {
+	.messages-date__text {
+		background: rgba(26, 28, 31, 0.85) !important;
+	}
+}
+
+/* Scroll to the newest message: round floating button */
+.chatView .scroll-to-bottom,
+.chatView [class*='scroll-to-bottom'] .button-vue {
+	border-radius: 50% !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow-strong) !important;
+}
+
+/* ================================================================ Responsive */
+
+/* The chat reacts to its own width (it shrinks when the right sidebar opens), not the window's */
+.chatView {
+	container: chat / inline-size;
+}
+
+.top-bar {
+	container: chatheader / inline-size;
+}
+
+@container chat (max-width: 620px) {
+	.message--sided {
+		max-width: 90% !important;
+	}
+
+	.chatView .scroller__content {
+		padding-inline: 6px 10px !important;
+	}
+
+	.chatView .wrapper:has(.new-message-form) {
+		padding: 8px 10px 12px !important;
+	}
+}
+
+/* Narrow header: smaller avatar and title, and the less used buttons step aside */
+@container chatheader (max-width: 560px) {
+	.top-bar .conversation-header .title {
+		font-size: 16px;
+	}
+
+	.top-bar .conversation-header .description {
+		display: none;
+	}
+
+	.top-bar__icon-wrapper .avatar,
+	.top-bar__icon-wrapper .conversation-icon {
+		width: 36px !important;
+		height: 36px !important;
+	}
+
+	.top-bar__calendar-events {
+		display: none !important;
+	}
+}
+
+/* Smaller windows: tighter frame */
+@media (max-width: 1180px) {
+	:root {
+		--tg-gap: 10px;
+		--tg-rail-width: 56px;
+		--tg-radius-xl: 26px;
+	}
+
+	.nav-rail__item {
+		width: 44px !important;
+		height: 44px !important;
+	}
+}
+
+/* Short windows: the rail buttons get closer together */
+@media (max-height: 700px) {
+	.nav-rail__item {
+		width: 42px !important;
+		height: 42px !important;
+	}
+}
+
+/* Right sidebar: a long conversation name wraps instead of being cut */
+.app-sidebar-header__mainname {
+	font-size: 18px !important;
+	white-space: normal !important;
+	line-height: 1.25 !important;
+}
+
+/* Room at the start of the header for Talk's "collapse the list" button, which floats there */
+.top-bar {
+	padding-inline-start: 60px !important;
+}
+
+/* Below 1280px the right sidebar floats over the chat instead of squeezing it */
+@media (max-width: 1280px) {
+	.app-sidebar {
+		position: absolute !important;
+		z-index: 20;
+		inset-block: 0 !important;
+		inset-inline-end: 0 !important;
+		max-width: min(360px, 80%) !important;
+		box-shadow: 0 24px 60px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.08) !important;
+	}
+}
+
+/* ================================================================ Fixes after review */
+
+/* Popovers and menus (user cards, conversation actions) always on a solid card */
+.v-popper__popper .v-popper__inner,
+.popover__wrapper,
+.action-item__popper .v-popper__inner {
+	background: var(--tg-card) !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: var(--tg-radius-m) !important;
+	box-shadow: var(--tg-shadow-strong) !important;
+}
+
+/* Chat surface a touch darker than white, so white incoming bubbles stand out */
+:root {
+	--tg-chat-surface: #f7f8fa;
+	--tg-bubble-in: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--tg-chat-surface: #141618;
+		--tg-bubble-in: #24272b;
+	}
+}
+
+.chatView,
+.chatView .wrapper:has(.new-message-form) {
+	background: var(--tg-chat-surface) !important;
+}
+
+.message--sided.incoming .message-body {
+	border: 1px solid var(--tg-line) !important;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+}
+
+/* Code inside bubbles */
+.message--sided .message-body code,
+.message--sided .message-body pre {
+	background: var(--tg-soft) !important;
+	border-radius: 8px !important;
+}
+
+.message--sided.outgoing .message-body code,
+.message--sided.outgoing .message-body pre {
+	background: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* The floating day pill hides what scrolls under it */
+.messages-date__text {
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow) !important;
+}
+
+/* "Collapse the list" button fully inside the chat card, aligned with the header */
+.app-navigation-toggle-wrapper {
+	inset-inline-end: calc(-1 * (var(--tg-gap) + 52px)) !important;
+}
+
+.top-bar {
+	padding-inline-start: 72px !important;
+}
+
+/* Conversations card ends level with the chat card */
+#app-navigation-vue {
+	padding-block-end: 0 !important;
+}
+
+.app-navigation__list {
+	margin-block-end: 0 !important;
+	flex: 1 1 auto;
+}
+
+/* Title bar menu readable on the light backdrop */
+#header .title-bar__main-menu-container .button-vue {
+	color: var(--tg-text) !important;
+}
+
+/* Code blocks inside own (blue) bubbles: darker panel, white text */
+.message--sided.outgoing .rich-text__code-block,
+.message--sided.outgoing .message-body pre,
+.message--sided.outgoing .message-body pre code {
+	background: rgba(0, 0, 0, 0.24) !important;
+	color: #ffffff !important;
+}
+
+/* Talk's footer under the list only holds the rows replaced by the rail: no empty strip */
+.navigation-bottom {
+	height: 0 !important;
+	min-height: 0 !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+}
+
+/* Home dashboard in the same white card as the chat, filling the same space */
+.talk-dashboard-wrapper {
+	box-sizing: border-box;
+	width: 100% !important;
+	max-width: none !important;
+	height: calc(100vh - var(--header-height) - var(--tg-gap)) !important;
+	max-height: none !important;
+	margin: 0 !important;
+	overflow: auto;
+	padding: 24px 28px 28px 72px !important;
+	background: var(--tg-card) !important;
+	border-radius: var(--tg-radius-xl);
+	box-shadow: var(--tg-shadow);
+}
+
+.talk-dashboard-wrapper h2 {
+	font-size: 24px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+.talk-dashboard-wrapper .button-vue {
+	border-radius: 999px !important;
+}
+
+.talk-dashboard-wrapper .button-vue--secondary,
+.talk-dashboard-wrapper .button-vue--tertiary {
+	background: var(--tg-card) !important;
+	border: 1px solid var(--tg-line) !important;
+	color: var(--tg-text) !important;
+}
+
+/* Conversations list straight on the backdrop, no card behind it */
+.app-navigation__list {
+	background: transparent !important;
+	box-shadow: none !important;
+	padding-inline: 0 !important;
+}
+
+.conversation .list-item:hover {
+	background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.conversation.list-item__wrapper--active .list-item,
+.conversation .list-item--active {
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	.conversation .list-item:hover {
+		background: rgba(255, 255, 255, 0.06) !important;
+	}
+}
+
+/* Thin, quiet scrollbars */
+.app-navigation__list *::-webkit-scrollbar,
+.app-navigation__list::-webkit-scrollbar,
+.chatView *::-webkit-scrollbar {
+	width: 6px;
+}
+
+.app-navigation__list *::-webkit-scrollbar-thumb,
+.app-navigation__list::-webkit-scrollbar-thumb,
+.chatView *::-webkit-scrollbar-thumb {
+	border-radius: 3px;
+	background: rgba(0, 0, 0, 0.18);
+}
+
+/* ================================================================ Title bar menus */
+
+/* Menu and avatar buttons: soft round buttons on the backdrop */
+#header .title-bar__main-menu-container .action-item__menutoggle,
+#header .title-bar__main-menu-container .button-vue {
+	width: 38px !important;
+	height: 38px !important;
+	border-radius: 50% !important;
+	background: rgba(255, 255, 255, 0.7) !important;
+	color: var(--tg-text) !important;
+	box-shadow: var(--tg-shadow);
+}
+
+#header .title-bar__main-menu-container .button-vue:hover {
+	background: var(--tg-card) !important;
+}
+
+/* The menu itself: a compact floating card */
+.menu__inner {
+	min-width: 240px;
+	padding: 6px !important;
+	gap: 2px;
+}
+
+.menu-item__action {
+	min-height: 38px !important;
+	padding: 8px 12px !important;
+	border-radius: 10px !important;
+	font-size: 14px !important;
+	color: var(--tg-text) !important;
+}
+
+.menu-item__action:hover,
+.menu-item__action:focus-visible {
+	background: var(--tg-soft) !important;
+}
+
+.menu-item__icon {
+	color: var(--tg-text-mid);
+}
+
+.menu-item__icon .material-design-icon,
+.menu-item__icon svg {
+	width: 18px !important;
+	height: 18px !important;
+}
+
+.menu-item-separator {
+	margin: 4px 10px !important;
+	border-top: 1px solid var(--tg-line) !important;
+}
+
+/* ================================================================ Settings dialog and modals */
+
+.modal-mask {
+	background: rgba(17, 24, 39, 0.28) !important;
+	backdrop-filter: blur(6px);
+}
+
+.modal-container {
+	border-radius: var(--tg-radius-xl) !important;
+	box-shadow: 0 30px 80px rgba(16, 24, 40, 0.25) !important;
+	overflow: hidden;
+}
+
+/* Left navigation of the dialog */
+.app-settings__navigation,
+.dialog__navigation {
+	background: var(--tg-soft) !important;
+	border-inline-end: none !important;
+	padding: 8px !important;
+}
+
+.app-settings__title {
+	font-size: 20px !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.015em;
+}
+
+.navigation-list__link {
+	border-radius: 12px !important;
+	padding-block: 9px !important;
+	font-size: 14px !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.navigation-list__link:hover {
+	background: rgba(255, 255, 255, 0.7) !important;
+}
+
+.navigation-list__link--active,
+.navigation-list__link--active:hover {
+	background: var(--tg-card) !important;
+	color: var(--tg-accent-text) !important;
+	font-weight: 600;
+	box-shadow: var(--tg-shadow) !important;
+}
+
+.navigation-list__link:focus-visible {
+	outline: 2px solid var(--tg-accent) !important;
+	outline-offset: 1px;
+}
+
+/* Sections and rows */
+.app-settings-section__name {
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	margin-block-start: 8px;
+}
+
+.app-settings-section [class*='_formBoxItem_']:not([class*='_formBoxItem__']) {
+	border-radius: 14px !important;
+}
+
+/* Theme picker as a segmented control: a grey track, the chosen option a white chip */
+[class*='_radioGroupButton_'] {
+	border: none !important;
+	background: var(--tg-soft) !important;
+	color: var(--tg-text-mid) !important;
+	box-shadow: none !important;
+}
+
+[class*='_radioGroupButton_active_'] {
+	background: var(--tg-card) !important;
+	color: var(--tg-accent-text) !important;
+	font-weight: 600;
+	box-shadow: var(--tg-shadow) !important;
+	outline: 1.5px solid var(--tg-accent) !important;
+	outline-offset: -1.5px;
+}
+
+.modal-container__close {
+	border-radius: 50% !important;
+	background: var(--tg-soft) !important;
+}
+
+/* ================================================================ Action menus (message, conversation, filters) */
+
+.v-popper--theme-nc-popover-9 .v-popper__inner,
+.action-item__popper .v-popper__inner {
+	padding: 6px !important;
+	border-radius: 16px !important;
+}
+
+/* Every row of a menu: compact, rounded, soft hover */
+.action-button,
+.action-link,
+.action-router,
+.action-text,
+.action-checkbox__label,
+.action-radio__label {
+	min-height: 38px !important;
+	padding-inline: 10px 12px !important;
+	border-radius: 10px !important;
+	font-size: 14px !important;
+	font-weight: 450 !important;
+	color: var(--tg-text) !important;
+	opacity: 1 !important;
+}
+
+.action-button:hover,
+.action-link:hover,
+.action-router:hover,
+.action-checkbox__label:hover,
+.action-radio__label:hover {
+	background: var(--tg-soft) !important;
+}
+
+/* No black frame on the first item when a menu opens: a soft highlight instead */
+.action-button:focus,
+.action-link:focus,
+.action-router:focus,
+.action-button:focus-visible,
+.action-link:focus-visible,
+.action-router:focus-visible {
+	outline: none !important;
+	box-shadow: none !important;
+	background: var(--tg-soft) !important;
+}
+
+.action-button__icon,
+.action-link__icon,
+.action-router__icon,
+.action-button .material-design-icon {
+	color: var(--tg-text-mid);
+}
+
+.action-button__icon,
+.action-link__icon,
+.action-router__icon {
+	width: 32px !important;
+	min-width: 32px !important;
+	background-size: 18px !important;
+}
+
+/* Section captions inside menus ("Filtrar conversa por", "Sort conversations") */
+.action-caption {
+	padding: 10px 12px 4px !important;
+	font-size: 11.5px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--tg-text-soft) !important;
+	opacity: 1 !important;
+}
+
+.action-separator {
+	margin: 4px 8px !important;
+	border-bottom-color: var(--tg-line) !important;
+}
+
+/* Checked options (sorting, grouping): accent tick */
+.action-button--active,
+.action-button[aria-checked='true'] {
+	color: var(--tg-accent-text) !important;
+	font-weight: 600 !important;
+}
+
+.action-button__pressed-icon,
+.action-button[aria-checked='true'] .action-button__menu-icon {
+	color: var(--tg-accent) !important;
+}
+
+/* Destructive items ("Sair da conversa", "Apagar") in red */
+.critical .action-button,
+.action-button.critical {
+	color: var(--tg-danger) !important;
+}
+
+/* ================================================================ Replying to a message */
+
+/* The message being answered, shown above the composer */
+.new-message-form__quote {
+	margin: 0 0 8px !important;
+	padding: 8px 10px 8px 12px !important;
+	border-radius: 14px !important;
+	background: var(--tg-card) !important;
+	border-inline-start: 4px solid var(--tg-accent) !important;
+	box-shadow: var(--tg-shadow) !important;
+}
+
+.new-message-form__quote .quote {
+	background: transparent !important;
+	border: none !important;
+	padding: 0 !important;
+}
+
+.new-message-form__quote .quote__main__author,
+.new-message-form__quote [class*='author'] {
+	color: var(--tg-accent-text) !important;
+	font-weight: 600 !important;
+}
+
+/* Quotes inside bubbles: author in the accent colour, text one line lighter */
+.message--sided .quote [class*='author'] {
+	font-weight: 600 !important;
+}
+
+.message--sided.incoming .quote [class*='author'] {
+	color: var(--tg-accent-text) !important;
+}
+
+/* ================================================================ Shared files */
+
+/* Images and files inside bubbles: rounded, framed */
+.message-body .file-preview,
+.message-body .file-preview__image,
+.message-body .image-container img,
+.message-body .preview {
+	border-radius: 14px !important;
+	overflow: hidden;
+}
+
+.message-body .file-preview:not(:has(img)) {
+	border: 1px solid var(--tg-line) !important;
+	background: var(--tg-card) !important;
+	padding: 6px 10px !important;
+}
+
+.message--sided.outgoing .message-body .file-preview:not(:has(img)) {
+	border-color: rgba(255, 255, 255, 0.3) !important;
+	background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Upload dialog (files chosen to share) */
+.upload-editor {
+	border-radius: var(--tg-radius-l) !important;
+}
+
+.upload-editor .file-preview,
+.upload-editor img {
+	border-radius: 14px !important;
+}
+
+/* ================================================================ Conversations list: active row */
+
+/* More room inside each row, and no blue bar outside the open one */
+.conversation .list-item {
+	padding-inline: 14px !important;
+}
+
+.conversation.list-item__wrapper--active::before,
+.list-item__wrapper--active > .list-item::before,
+.conversation .list-item--active::before {
+	display: none !important;
+}
+
+.app-navigation__list .list-item__wrapper--active {
+	border: none !important;
+	box-shadow: none !important;
+}
+
+/* ================================================================ Focus: keyboard only */
+
+/* Nextcloud's global :focus ring stays on a button after a mouse click. Show a ring only when
+   navigating with the keyboard, in the accent colour */
+.nav-rail__item:focus,
+.top-bar__controls .button-vue:focus,
+.new-message-form .button-vue:focus,
+.new-conversation .button-vue:focus {
+	outline: none !important;
+	box-shadow: var(--tg-shadow) !important;
+}
+
+.nav-rail__item:focus:not(.nav-rail__item--active) {
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+}
+
+.nav-rail__item:focus-visible,
+.top-bar__controls .button-vue:focus-visible,
+.new-message-form .button-vue:focus-visible,
+.new-conversation .button-vue:focus-visible {
+	outline: 2px solid var(--tg-accent) !important;
+	outline-offset: 2px !important;
+}
+
+/* ================================================================ Inputs and selects everywhere */
+
+body {
+	--color-border-maxcontrast: #cfd4da;
+	accent-color: var(--tg-accent);
+}
+
+/* Toggle buttons next to search fields (filters): soft round, accent when on */
+.search-messages-tab .button-vue,
+.app-sidebar .button-vue--icon-only {
+	border-radius: 12px !important;
+}
+
+/* ================================================================ Right sidebar */
+
+.app-sidebar-header__mainname {
+	font-size: 18px !important;
+	font-weight: 700 !important;
+}
+
+/* Tabs as a segmented control */
+.app-sidebar-tabs__nav {
+	gap: 4px !important;
+	margin: 4px var(--tg-sidebar-pad) 12px !important;
+	padding: 4px !important;
+	border-radius: 14px !important;
+	background: var(--tg-soft) !important;
+}
+
+.app-sidebar-tabs__tab {
+	flex-direction: row !important;
+	gap: 6px !important;
+	min-height: 36px !important;
+	border: none !important;
+	border-radius: 10px !important;
+	background: transparent !important;
+	color: var(--tg-text-mid) !important;
+	font-size: 13px !important;
+	font-weight: 500 !important;
+}
+
+.app-sidebar-tabs__tab[aria-selected='true'],
+.app-sidebar-tabs__tab--active {
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+	font-weight: 600 !important;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08) !important;
+}
+
+.app-sidebar-tabs__highlight {
+	display: none !important;
+}
+
+/* Participants */
+.participant {
+	border-radius: 12px !important;
+	padding-block: 6px !important;
+}
+
+.participant:hover {
+	background: var(--tg-soft) !important;
+}
+
+.participant .avatardiv,
+.participant .avatardiv img {
+	width: 38px !important;
+	height: 38px !important;
+}
+
+.participant__user-name {
+	font-size: 14px !important;
+	font-weight: 500 !important;
+}
+
+.participant__status {
+	font-size: 12px !important;
+	color: var(--tg-text-soft) !important;
+}
+
+/* Shared items: sections as titled groups, media as a rounded grid, files as rows */
+.shared-items-tab__section {
+	margin-block-end: 18px !important;
+}
+
+.shared-items-tab__section h4,
+.shared-items-tab__section [class*='title'] {
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--tg-text-soft) !important;
+}
+
+.shared-items:has(.file-preview__image),
+.shared-items:has(img) {
+	display: grid !important;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 6px !important;
+}
+
+.shared-items img,
+.shared-items .file-preview__image {
+	width: 100% !important;
+	aspect-ratio: 1;
+	object-fit: cover;
+	border-radius: 10px !important;
+}
+
+.shared-items .file-preview:not(:has(img)) {
+	border-radius: 12px !important;
+	padding: 6px 8px !important;
+}
+
+.shared-items .file-preview:not(:has(img)):hover {
+	background: var(--tg-soft) !important;
+}
+
+.shared-items-tab__more-button {
+	border-radius: 999px !important;
+}
+
+/* ================================================================ Settings dialog, second pass */
+
+/* Content on a soft grey, settings grouped in white cards with hairline dividers */
+.app-settings__content {
+	background: var(--tg-chat-surface) !important;
+}
+
+.navigation-list__link,
+.navigation-list__link:focus {
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.navigation-list__link--active,
+.navigation-list__link--active:hover,
+.navigation-list__link--active:focus {
+	background: var(--tg-accent-soft) !important;
+	color: var(--tg-accent-text) !important;
+	box-shadow: none !important;
+}
+
+[class*='_ncFormBox_']:not([class*='_ncFormBox__item']) {
+	overflow: hidden;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 16px !important;
+	background: var(--tg-card) !important;
+	gap: 0 !important;
+}
+
+[class*='_ncFormBox_'] > [class*='_formBoxItem_']:not([class*='_formBoxItem__']),
+.app-settings-section [class*='_formBoxItem_']:not([class*='_formBoxItem__']) {
+	border-radius: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	min-height: 52px;
+}
+
+[class*='_ncFormBox_col'] > * + * {
+	border-top: 1px solid var(--tg-line) !important;
+}
+
+[class*='_formBoxItem_']:not([class*='_formBoxItem__']):hover {
+	background: var(--tg-soft) !important;
+}
+
+/* Theme picker: a segmented control (track + white chip), no outlines */
+[class*='_radioGroup_checkboxRadioContainer'] {
+	gap: 4px !important;
+	padding: 4px !important;
+	border-radius: 14px !important;
+	background: var(--tg-soft) !important;
+}
+
+[class*='_radioGroupButton_'] {
+	border-radius: 10px !important;
+	background: transparent !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+[class*='_radioGroupButton_active_'] {
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+	outline: none !important;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12) !important;
+}
+
+[class*='_radioGroupButton_'] *:focus,
+[class*='_radioGroupButton_'] *:focus-visible {
+	outline: none !important;
+}
+
+/* ================================================================ Home dashboard, second pass */
+
+/* Calm cards instead of the large blue 3D illustrations (drawn in each section's ::before) */
+.talk-dashboard-wrapper .dashboard-section::before {
+	display: none !important;
+}
+
+.talk-dashboard-wrapper .dashboard-section {
+	min-height: 0 !important;
+	padding: 22px 24px !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 20px !important;
+	background: var(--tg-chat-surface) !important;
+	box-shadow: none !important;
+}
+
+.talk-dashboard-wrapper .dashboard-section h3,
+.talk-dashboard-wrapper .dashboard-section h2 {
+	font-size: 17px !important;
+	font-weight: 700 !important;
+}
+
+.talk-dashboard__header {
+	font-size: 26px !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.02em;
+}
+
+.talk-dashboard__actions .button-vue {
+	min-height: 48px !important;
+}
+
+/* ================================================================ Dark mode, in the style of WhatsApp */
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--tg-backdrop: linear-gradient(160deg, #0f1a20 0%, #0b1418 60%, #0a1115 100%);
+		--tg-card: #111b21;
+		--tg-chat-surface: #0b141a;
+		--tg-soft: #202c33;
+		--tg-soft-hover: #2a3942;
+		--tg-line: #222e35;
+		--tg-text: #e9edef;
+		--tg-text-mid: #aebac1;
+		--tg-text-soft: #8696a0;
+		--tg-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+		--tg-shadow-strong: 0 8px 28px rgba(0, 0, 0, 0.45);
+
+		--tg-accent: #3d8fe6;
+		--tg-accent-hover: #5aa2ee;
+		--tg-accent-soft: rgba(61, 143, 230, 0.16);
+		--tg-accent-text: #8cc3ff;
+		--tg-on-accent: #ffffff;
+
+		--tg-bubble-in: #202c33;
+		--tg-bubble-in-text: #e9edef;
+		--tg-bubble-out: #144a74;
+		--tg-bubble-out-text: #e9edef;
+		--tg-bubble-out-meta: #9fbcd6;
+		--tg-read: #53bdeb;
+	}
+
+	body {
+		--color-border-maxcontrast: #3b4a54;
+	}
+
+	.message--sided.incoming .message-body {
+		border-color: transparent !important;
+	}
+
+	.conversation .list-item:hover {
+		background: rgba(255, 255, 255, 0.05) !important;
+	}
+
+	.conversation.list-item__wrapper--active .list-item,
+	.conversation .list-item--active {
+		background: var(--tg-soft) !important;
+	}
+
+	#header .title-bar__main-menu-container .button-vue {
+		background: var(--tg-soft) !important;
+	}
+}
+
+/* ================================================================ Dialogs (join conversations, new conversation, …) */
+
+.modal-container .dialog__name,
+.modal-container .modal-header__name,
+.modal-container > .modal-container__content h2:first-child {
+	padding-inline-end: 52px !important;
+	font-size: 20px !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.015em;
+	text-align: start !important;
+}
+
+/* Padding on the content only: NcDialog measures .dialog__wrapper and, below 876px, folds the
+   side navigation (app settings) on top of the content */
+.modal-container .dialog__content {
+	padding-inline: 20px !important;
+}
+
+/* Rows of conversations or people to pick */
+.modal-container .list-item {
+	border-radius: 14px !important;
+	padding-block: 8px !important;
+}
+
+.modal-container .list-item:hover {
+	background: var(--tg-soft) !important;
+}
+
+.modal-container .list-item--active,
+.modal-container .list-item[aria-selected='true'] {
+	background: var(--tg-accent-soft) !important;
+}
+
+/* Dialog buttons: pills; a disabled primary looks disabled, not washed-out blue */
+.modal-container .button-vue {
+	border-radius: 999px !important;
+	min-height: 42px !important;
+	padding-inline: 18px !important;
+}
+
+.modal-container .button-vue--primary:disabled,
+.modal-container .button-vue--primary[disabled] {
+	background: var(--tg-soft) !important;
+	color: var(--tg-text-soft) !important;
+	opacity: 1 !important;
+}
+
+/* Dashboard sections sized by their content, text from the top (the illustrations used to set the height) */
+.talk-dashboard-wrapper .dashboard-section,
+.talk-dashboard-wrapper .dashboard-section > * {
+	height: auto !important;
+	min-height: 0 !important;
+	justify-content: flex-start !important;
+}
+
+.talk-dashboard__items,
+.talk-dashboard__chats {
+	align-items: start !important;
+}
+
+.talk-dashboard-wrapper .dashboard-section > * {
+	padding: 0 !important;
+	max-width: 640px;
+}
+
+.talk-dashboard-wrapper .dashboard-section--wide,
+.talk-dashboard-wrapper .event-section,
+.talk-dashboard-wrapper .event-section > .dashboard-section {
+	width: 100% !important;
+	max-width: none !important;
+	box-sizing: border-box;
+}
+
+/* ================================================================ Message search: filters and dates */
+
+/* The native date input stays (Talk reads it) but is hidden behind the calendar field */
+.tg-date-native {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
+
+.native-datetime-picker:has(.tg-date-native) .input-field__label {
+	display: none !important;
+}
+
+.native-datetime-picker:has(.tg-date-native) .input-field__main-wrapper {
+	height: auto !important;
+}
+
+/* ================================================================ Calendar (flatpickr) */
+
+.flatpickr-calendar {
+	width: 296px !important;
+	padding: 10px 10px 8px !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 18px !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow-strong) !important;
+	font-family: var(--tg-font) !important;
+}
+
+.flatpickr-calendar::before,
+.flatpickr-calendar::after {
+	display: none !important;
+}
+
+.flatpickr-months {
+	padding-bottom: 6px;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month,
+.flatpickr-current-month input.cur-year {
+	color: var(--tg-text) !important;
+	fill: var(--tg-text) !important;
+	font-size: 14.5px !important;
+	font-weight: 600 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+	top: 8px !important;
+	width: 30px !important;
+	height: 30px !important;
+	padding: 7px !important;
+	border-radius: 50% !important;
+	color: var(--tg-text-mid) !important;
+	fill: var(--tg-text-mid) !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+	background: var(--tg-soft) !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+	fill: var(--tg-accent) !important;
+}
+
+span.flatpickr-weekday {
+	color: var(--tg-text-soft) !important;
+	font-size: 11.5px !important;
+	font-weight: 600 !important;
+	text-transform: uppercase;
+}
+
+.flatpickr-innerContainer,
+.flatpickr-rContainer,
+.flatpickr-days,
+.dayContainer {
+	width: 100% !important;
+	min-width: 0 !important;
+	max-width: none !important;
+}
+
+.flatpickr-day {
+	max-width: none !important;
+	height: 36px !important;
+	line-height: 36px !important;
+	border: none !important;
+	border-radius: 10px !important;
+	color: var(--tg-text) !important;
+	font-size: 13.5px !important;
+}
+
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+	background: var(--tg-soft) !important;
+}
+
+.flatpickr-day.today {
+	color: var(--tg-accent-text) !important;
+	font-weight: 700;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+	background: var(--tg-accent) !important;
+	color: var(--tg-on-accent) !important;
+	font-weight: 600;
+}
+
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+	color: var(--tg-text-soft) !important;
+	opacity: 0.55;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+	color: var(--tg-text-soft) !important;
+	opacity: 0.35;
+	background: transparent !important;
+}
+
+.tg-date-clear {
+	display: block;
+	margin: 8px 4px 2px auto;
+	padding: 6px 14px;
+	border: none;
+	border-radius: 999px;
+	background: var(--tg-soft);
+	color: var(--tg-text-mid);
+	font-size: 12.5px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.tg-date-clear:hover {
+	background: var(--tg-soft-hover);
+	color: var(--tg-text);
+}
+
+/* ================================================================ Fields
+ *
+ * One look for every text field, text area, select and date field:
+ * white, a hairline border, 12px corners, 40px tall.
+ * On focus: a blue border and a soft blue halo (never Nextcloud's dark double ring).
+ *
+ * Nextcloud draws field borders with box-shadow, and its focus rule is
+ * `.input-field__input[data-v]:focus-within:not([disabled])` with !important (specificity 0,4,0).
+ * The `:root body` prefix below keeps ours above it.
+ */
+
+:root {
+	--tg-field-height: 40px;
+	--tg-field-radius: 12px;
+	--tg-field-bg: var(--tg-card);
+	--tg-field-border: #dde1e6;
+	--tg-field-border-hover: #c3c9d0;
+	--tg-field-ring: rgba(47, 116, 208, 0.18);
+	--tg-field-rest: inset 0 0 0 1px var(--tg-field-border);
+	--tg-field-hover: inset 0 0 0 1px var(--tg-field-border-hover);
+	--tg-field-focus: inset 0 0 0 1.5px var(--tg-accent), 0 0 0 3px var(--tg-field-ring);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--tg-field-bg: #111b21;
+		--tg-field-border: #2a3942;
+		--tg-field-border-hover: #3b4a54;
+		--tg-field-ring: rgba(61, 143, 230, 0.28);
+	}
+}
+
+/* Size: the wrapper keeps 3px around the field for the halo, so the field itself is 40px */
+:root body .input-field:not(.conversations-search .input-field) {
+	--default-clickable-area: calc(var(--tg-field-height) + 6px);
+	--border-width-input-focused: 3px;
+	--border-radius-element: var(--tg-field-radius);
+}
+
+:root body .input-field__input,
+:root body .textarea__input {
+	border: none !important;
+	border-radius: var(--tg-field-radius) !important;
+	background: var(--tg-field-bg) !important;
+	box-shadow: var(--tg-field-rest) !important;
+	color: var(--tg-text) !important;
+	font-size: 14px !important;
+	outline: none !important;
+	transition: box-shadow 140ms ease, background-color 140ms ease !important;
+}
+
+:root body .input-field__input:hover:not([disabled], :focus),
+:root body .textarea__input:hover:not([disabled], :focus) {
+	box-shadow: var(--tg-field-hover) !important;
+}
+
+:root body .input-field__input:is(:focus, :focus-visible, :focus-within, :active):not([disabled]),
+:root body .textarea__input:is(:focus, :focus-visible, :focus-within, :active):not([disabled]) {
+	box-shadow: var(--tg-field-focus) !important;
+	outline: none !important;
+}
+
+:root body .input-field__input::placeholder,
+:root body .textarea__input::placeholder {
+	color: var(--tg-text-soft) !important;
+	opacity: 1;
+}
+
+/* No frame of Nextcloud's own around the field's wrapper */
+:root body .input-field__main-wrapper,
+:root body .input-field:focus-within,
+:root body .textarea__main-wrapper {
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+/* Icons inside fields: quiet grey, blue while the field has focus */
+:root body .input-field__icon {
+	color: var(--tg-text-soft) !important;
+	opacity: 1 !important;
+	transition: color 140ms ease;
+}
+
+:root body .input-field:focus-within .input-field__icon--leading {
+	color: var(--tg-accent) !important;
+}
+
+/* Label on the border ("Nome", "Descrição", …): sits in a notch of the field's own colour */
+:root body .input-field__label,
+:root body .textarea__label {
+	color: var(--tg-text-mid) !important;
+}
+
+:root body .input-field__input:is(:focus, :not(:placeholder-shown)) + .input-field__label,
+:root body .textarea__input:is(:focus, :not(:placeholder-shown)) + .textarea__label {
+	background-color: var(--tg-field-bg) !important;
+}
+
+:root body .input-field__input:focus + .input-field__label,
+:root body .textarea__input:focus + .textarea__label {
+	color: var(--tg-accent) !important;
+}
+
+/* Clear (×) and other buttons inside a field: small, round, quiet */
+:root body .input-field__trailing-button.button-vue,
+:root body .input-field__clear-button.button-vue {
+	--button-size: 30px !important;
+	width: 30px !important;
+	min-width: 30px !important;
+	height: 30px !important;
+	min-height: 30px !important;
+	top: 50% !important;
+	inset-inline-end: 8px !important;
+	margin: 0 !important;
+	transform: translateY(-50%);
+	border: none !important;
+	border-radius: 50% !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: var(--tg-text-soft) !important;
+}
+
+:root body .input-field__trailing-button.button-vue:hover {
+	background: var(--tg-soft) !important;
+	color: var(--tg-text) !important;
+}
+
+/* Errors */
+:root body .input-field--error .input-field__input,
+:root body .input-field__input:user-invalid {
+	box-shadow: inset 0 0 0 1.5px var(--tg-danger) !important;
+}
+
+/* --- Conversations search (left column): a white pill on the backdrop, no border at rest */
+
+:root body .conversations-search .input-field__input {
+	border-radius: 24px !important;
+	box-shadow: var(--tg-shadow) !important;
+}
+
+:root body .conversations-search .input-field__input:is(:focus, :focus-visible, :focus-within, :active):not([disabled]) {
+	box-shadow: inset 0 0 0 1.5px var(--tg-accent), 0 0 0 3px var(--tg-field-ring), var(--tg-shadow) !important;
+}
+
+/* --- Selects (vue-select inside NcSelect)
+ * Single select: the inner text field is the box and the toggle around it stays bare.
+ * Multiple select: the toggle is the box (it holds the chips) and the inner field is bare.
+ */
+
+body {
+	--vs-border-width: 0px !important;
+	--vs-border-radius: var(--tg-field-radius) !important;
+	--vs-controls-color: var(--tg-text-soft) !important;
+	--vs-dropdown-bg: var(--tg-card) !important;
+	--vs-dropdown-box-shadow: var(--tg-shadow-strong) !important;
+	--vs-dropdown-option--active-bg: var(--tg-soft) !important;
+	--vs-dropdown-option--active-color: var(--tg-text) !important;
+	--vs-dropdown-option--kb-focus-box-shadow: none !important;
+	--vs-dropdown-option-padding: 6px 10px !important;
+	--vs-search-input-placeholder-color: var(--tg-text-soft) !important;
+	--vs-selected-bg: var(--tg-accent-soft) !important;
+	--vs-selected-color: var(--tg-accent-text) !important;
+}
+
+:root body .nc-select.v-select.select {
+	--default-clickable-area: var(--tg-field-height);
+	margin: 0 !important;
+	outline: none !important;
+}
+
+:root body .nc-select.v-select.select:not(.vs--multiple) .vs__dropdown-toggle {
+	padding: 0 !important;
+	border: none !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+/* The menu opens as its own card below the field, so the field keeps all four corners */
+:root body .nc-select.v-select.select.vs--open .vs__search .input-field__input {
+	border-radius: var(--tg-field-radius) !important;
+	box-shadow: var(--tg-field-focus) !important;
+}
+
+:root body .nc-select.v-select.select.vs--multiple .vs__dropdown-toggle {
+	min-height: var(--tg-field-height) !important;
+	border: none !important;
+	border-radius: var(--tg-field-radius) !important;
+	background: var(--tg-field-bg) !important;
+	box-shadow: var(--tg-field-rest) !important;
+	outline: none !important;
+}
+
+:root body .nc-select.v-select.select.vs--multiple.vs--open .vs__dropdown-toggle,
+:root body .nc-select.v-select.select.vs--multiple .vs__dropdown-toggle:focus-within {
+	box-shadow: var(--tg-field-focus) !important;
+}
+
+:root body .nc-select.v-select.select.vs--multiple .vs__search .input-field__input {
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+:root body .nc-select.v-select.select .vs__selected {
+	border-radius: 999px !important;
+	background: var(--tg-accent-soft) !important;
+	color: var(--tg-accent-text) !important;
+	font-weight: 500;
+}
+
+:root body .nc-select .vs__open-indicator-button {
+	color: var(--tg-text-soft) !important;
+}
+
+:root body .nc-select.vs--open .vs__open-indicator {
+	color: var(--tg-accent) !important;
+}
+
+/* The list of options: a floating card */
+:root body .vs__dropdown-menu {
+	margin-top: 6px !important;
+	padding: 6px !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 14px !important;
+	background: var(--tg-card) !important;
+	box-shadow: var(--tg-shadow-strong) !important;
+	max-height: 320px !important;
+}
+
+:root body .vs__dropdown-option {
+	min-height: 0 !important;
+	margin-block: 1px !important;
+	padding: 6px 10px !important;
+	border-radius: 10px !important;
+	color: var(--tg-text) !important;
+}
+
+:root body .vs__dropdown-option--highlight {
+	background: var(--tg-soft) !important;
+	color: var(--tg-text) !important;
+}
+
+:root body .vs__dropdown-option--selected {
+	color: var(--tg-accent-text) !important;
+	font-weight: 500;
+}
+
+:root body .vs__dropdown-option .avatardiv,
+:root body .vs__dropdown-option .avatardiv img {
+	width: 28px !important;
+	height: 28px !important;
+}
+
+:root body .vs__dropdown-option .option {
+	gap: 10px !important;
+	font-size: 14px !important;
+}
+
+:root body .vs__no-options {
+	padding: 10px !important;
+	color: var(--tg-text-soft) !important;
+	font-size: 13px;
+}
+
+/* --- Date fields (flatpickr in front of the hidden native input) */
+
+.tg-date-field {
+	box-sizing: border-box;
+	width: 100% !important;
+	height: var(--tg-field-height) !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 12px 0 38px !important;
+	border: none !important;
+	border-radius: var(--tg-field-radius) !important;
+	background: var(--tg-field-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238a9099'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 16H5V9h14zM5 7V6h14v1z'/%3E%3C/svg%3E") no-repeat 12px center / 16px !important;
+	box-shadow: var(--tg-field-rest) !important;
+	color: var(--tg-text) !important;
+	font-size: 14px !important;
+	cursor: pointer;
+	outline: none !important;
+	transition: box-shadow 140ms ease;
+}
+
+.tg-date-field::placeholder {
+	color: var(--tg-text-soft);
+}
+
+.tg-date-field:hover {
+	box-shadow: var(--tg-field-hover) !important;
+}
+
+.tg-date-field:focus,
+.tg-date-field.active {
+	box-shadow: var(--tg-field-focus) !important;
+}
+
+/* --- Message search panel: one column, same height everywhere, even spacing */
+
+.search-form__search-box-wrapper {
+	display: flex !important;
+	align-items: center !important;
+	gap: 8px !important;
+}
+
+.search-form__search-box-wrapper > .input-field {
+	flex: 1 1 auto;
+	margin: 0 !important;
+}
+
+/* Filter toggle next to the field: a 40px circle, blue when the filters are open */
+.search-form__search-box-wrapper > .button-vue {
+	--button-size: var(--tg-field-height) !important;
+	flex: 0 0 var(--tg-field-height);
+	width: var(--tg-field-height) !important;
+	min-width: var(--tg-field-height) !important;
+	height: var(--tg-field-height) !important;
+	min-height: var(--tg-field-height) !important;
+	border: none !important;
+	border-radius: 50% !important;
+	background: var(--tg-soft) !important;
+	box-shadow: none !important;
+	color: var(--tg-text-mid) !important;
+}
+
+.search-form__search-box-wrapper > .button-vue:hover {
+	background: var(--tg-soft-hover) !important;
+	color: var(--tg-text) !important;
+}
+
+.search-form__search-box-wrapper > .button-vue[aria-pressed='true'],
+.search-form__search-box-wrapper > .button-vue--primary {
+	background: var(--tg-accent-soft) !important;
+	color: var(--tg-accent-text) !important;
+}
+
+.search-form__search-detail {
+	display: flex !important;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 6px !important;
+	padding: 0 !important;
+}
+
+.search-form__search-detail > .v-select,
+.search-form__search-detail .input-field {
+	width: 100% !important;
+	min-width: 0 !important;
+	margin: 0 !important;
+}
+
+.search-form__search-detail__date-picker-wrapper {
+	display: grid !important;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px !important;
+}
+
+/* The date wrapper only holds the visible calendar field: no extra height or label,
+   and the same 3px halo room as the other fields so the edges line up */
+.native-datetime-picker:has(.tg-date-native) .input-field__main-wrapper {
+	height: auto !important;
+	padding: 3px !important;
+}
+
+.native-datetime-picker:has(.tg-date-native) .input-field__label {
+	display: none !important;
+}
+
+/* Single select: its text field as tall as every other field */
+:root body .nc-select.v-select.select:not(.vs--multiple) .vs__search .input-field__main-wrapper {
+	height: calc(var(--tg-field-height) + 6px) !important;
+}
+
+:root body .nc-select.v-select.select:not(.vs--multiple) .vs__search .input-field__input {
+	height: var(--tg-field-height) !important;
+}
+
+/* The filter button ends where the fields' visible edge ends (they keep 3px of halo room) */
+.search-form__search-box-wrapper {
+	padding-inline-end: 3px;
+}
+
+/* Participants search: field and dial-pad button on one line, the button a 40px circle */
+.app-sidebar .search-form:has(> .input-field) {
+	display: flex !important;
+	align-items: center !important;
+	gap: 8px !important;
+	padding-inline-end: 3px;
+}
+
+.app-sidebar .search-form > .input-field {
+	flex: 1 1 auto;
+	margin: 0 !important;
+}
+
+.app-sidebar .search-form > .v-popper .button-vue {
+	--button-size: var(--tg-field-height) !important;
+	width: var(--tg-field-height) !important;
+	min-width: var(--tg-field-height) !important;
+	height: var(--tg-field-height) !important;
+	border: none !important;
+	border-radius: 50% !important;
+	background: var(--tg-soft) !important;
+	box-shadow: none !important;
+	color: var(--tg-text-mid) !important;
+}
+
+.app-sidebar .search-form > .v-popper .button-vue:hover {
+	background: var(--tg-soft-hover) !important;
+	color: var(--tg-text) !important;
+}
+
+/* ================================================================ Right sidebar spacing
+ * One inset for everything in the sidebar card: title, tabs, fields, rows.
+ * The card has 32px corners, so nothing sits closer than 20px to its edge.
+ */
+
+.app-sidebar {
+	--tg-sidebar-pad: 20px;
+}
+
+/* Title: same inset as the content, room on the right for the close button */
+.app-sidebar-header .content__header {
+	padding: 22px var(--tg-sidebar-pad) 10px !important;
+}
+
+.app-sidebar-header .content__name {
+	padding-inline-end: 48px !important;
+	font-size: 20px !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.015em;
+	line-height: 34px !important;
+}
+
+/* Close (×): a 36px soft circle, inset from the rounded corner and level with the title */
+.app-sidebar .app-sidebar__close.button-vue {
+	--button-size: 36px !important;
+	top: 21px !important;
+	inset-inline-end: 16px !important;
+	width: 36px !important;
+	min-width: 36px !important;
+	height: 36px !important;
+	min-height: 36px !important;
+	border-radius: 50% !important;
+	background: transparent !important;
+	color: var(--tg-text-mid) !important;
+}
+
+.app-sidebar .app-sidebar__close.button-vue:hover {
+	background: var(--tg-soft) !important;
+	color: var(--tg-text) !important;
+}
+
+/* Tab content: 20px from the edges.
+   Fields keep 3px halo room and rows 8px of their own padding, so the panel adds the rest. */
+.app-sidebar .app-sidebar__tab {
+	padding: 0 calc(var(--tg-sidebar-pad) - 8px) 12px !important;
+}
+
+.app-sidebar .app-sidebar__tab .search-form {
+	padding-inline: 5px 3px !important;
+}
+
+/* Message search panel (has no tabs): same inset */
+.app-sidebar .search-messages-tab,
+.app-sidebar .search-form:not(.app-sidebar__tab .search-form) {
+	padding-inline: calc(var(--tg-sidebar-pad) - 3px) !important;
+}
+
+/* Tabs: the white chip marks the open tab; no underline bar inside it, label centred */
+.app-sidebar-tabs__tab.button-vue {
+	padding: 4px 12px !important;
+}
+
+.app-sidebar-tabs__tab.button-vue::after {
+	display: none !important;
+}
+
+.app-sidebar-tabs__tab.button-vue {
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+.app-sidebar-tabs__tab [class*='_sidebarTabsButton__name_'] {
+	line-height: 20px !important;
+}
+
+/* The icon's two layers (outline / filled) stacked on one 20px cell */
+.app-sidebar-tabs__tab [class*='_sidebarTabsButton__icon_'] {
+	display: grid !important;
+	height: 20px !important;
+}
+
+.app-sidebar-tabs__tab [class*='_sidebarTabsButton__iconLayer_'] {
+	grid-area: 1 / 1;
+}
+
+/* ================================================================ Motion (CSS part)
+ * Menus, popovers and select lists open with a short spring-like scale.
+ * The rest (smooth scroll, new messages, dialogs, the rail indicator) is in utils/motion.ts.
+ */
+
+:root {
+	--tg-ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1.15);
+	--tg-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.v-popper__popper .v-popper__wrapper {
+	transform-origin: top center;
+	transition: transform 200ms var(--tg-ease-spring), opacity 140ms var(--tg-ease-out);
+}
+
+.v-popper__popper[data-popper-placement^='top'] .v-popper__wrapper {
+	transform-origin: bottom center;
+}
+
+.v-popper__popper--hidden .v-popper__wrapper {
+	opacity: 0;
+	transform: translateY(-4px) scale(0.96);
+}
+
+.v-popper__popper[data-popper-placement^='top'].v-popper__popper--hidden .v-popper__wrapper {
+	transform: translateY(4px) scale(0.96);
+}
+
+.vs__dropdown-menu {
+	transform-origin: top center;
+	transition: transform 200ms var(--tg-ease-spring), opacity 140ms var(--tg-ease-out);
+}
+
+@starting-style {
+	.vs__dropdown-menu {
+		opacity: 0;
+		transform: translateY(-4px) scale(0.98);
+	}
+}
+
+/* Buttons give a little under the finger */
+.button-vue:not(:disabled):active {
+	transform: scale(0.96);
+}
+
+.button-vue {
+	transition: background-color 140ms ease, color 140ms ease, transform 120ms var(--tg-ease-out) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+	}
+}

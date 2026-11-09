@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
 		container="body">
 		<template #icon>
 			<UiDotBadge insetInlineEnd="10%" :enabled="!!newRelease">
-				<IconMenu :size="20" fillColor="var(--color-background-plain-text)" />
+				<IconMenu :size="20" fillColor="currentColor" />
 			</UiDotBadge>
 		</template>
 

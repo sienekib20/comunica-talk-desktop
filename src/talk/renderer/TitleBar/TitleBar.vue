@@ -41,11 +41,11 @@ const { isDevMode } = useDevMode()
 
 			<div class="spacer" />
 
-			<div v-if="isDevMode" class="title-bar__item" data-theme-dark>
+			<div v-if="isDevMode" class="title-bar__item">
 				<DevMenu />
 			</div>
 
-			<div class="title-bar__item title-bar__main-menu-container" data-theme-dark>
+			<div class="title-bar__item title-bar__main-menu-container">
 				<MainMenu />
 			</div>
 

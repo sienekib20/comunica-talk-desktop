@@ -54,16 +54,14 @@ async function getLatestRelease(): Promise<{ latest?: ReleaseInfo, stable?: Rele
 				.find((installer) => (
 					installer.filename.startsWith(BUILD_CONFIG.applicationName.replace(/[^a-z0-9]/gi, '.'))
 					&& installer.filename.includes(`-${platformTitle.toLowerCase()}-`)
-					// We don't know to which architecture the app was build
-					// But currently there are no alternatives, each OS has only one arch installer available
-					// Checking it in case more installers are added in future (windows/linux arm64 or nor universal macOS)
-					&& installer.filename.includes(isMac ? '-universal' : '-x64')
+					// The installer for this machine: its own architecture, or a universal one on macOS
+					&& (installer.filename.includes(`-${process.arch}.`) || (isMac && installer.filename.includes('-universal.')))
 					&& installer.filename.endsWith(`.${currentInstallerExt}`))),
 		})
 
 	try {
 		// Ref: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28
-		const response = await fetch('https://api.github.com/repos/nextcloud-releases/talk-desktop/releases', {
+		const response = await fetch(`https://api.github.com/repos/${BUILD_CONFIG.updateRepository}/releases`, {
 			headers: {
 				Accept: 'application/vnd.github+json',
 				'X-GitHub-Api-Version': '2022-11-28',

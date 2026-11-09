@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const { BrowserWindow } = require('electron')
+const { BrowserWindow, nativeTheme } = require('electron')
 const { setupTray } = require('../app/app.tray.js')
 const { getAppConfig } = require('../app/AppConfig.ts')
 const { applyContextMenu } = require('../app/applyContextMenu.js')
@@ -12,7 +12,6 @@ const { applyExternalLinkHandler } = require('../app/externalLinkHandlers.ts')
 const { getScaledWindowMinSize, getScaledWindowSize, applyZoom, buildTitle, getWindowUrl, getTitleBarSymbolColor } = require('../app/utils.ts')
 const { applyWheelZoom } = require('../app/zoom.service.ts')
 const { TITLE_BAR_HEIGHT } = require('../constants.js')
-const { BUILD_CONFIG } = require('../shared/build.config.ts')
 const { getBrowserWindowIcon } = require('../shared/icons.utils.js')
 
 /**
@@ -25,10 +24,12 @@ function createTalkWindow() {
 		title: buildTitle(),
 		...getScaledWindowMinSize({
 			// Enough to keep the conversations list and the chat side by side
-			minWidth: 800,
+			minWidth: 860,
 			minHeight: 600,
 		}),
-		backgroundColor: BUILD_CONFIG.backgroundColor,
+		// The colour of the window behind the page while it loads: the same as the page's backdrop
+		// (see chat.styles.css), so the window does not flash a different colour on start
+		backgroundColor: nativeTheme.shouldUseDarkColors ? '#15191E' : '#E9EEF3',
 		autoHideMenuBar: true,
 		webPreferences: {
 			preload: TALK_DESKTOP__WINDOW_TALK_PRELOAD_WEBPACK_ENTRY,
@@ -51,8 +52,9 @@ function createTalkWindow() {
 	const window = new BrowserWindow({
 		...talkWindowOptions,
 		...getScaledWindowSize({
-			width: 1400,
-			height: 900,
+			// Fits a 13" laptop screen with room to spare; the size is remembered afterwards
+			width: 1360,
+			height: 860,
 		}),
 		name: 'talk-primary',
 		windowStatePersistence: true,
