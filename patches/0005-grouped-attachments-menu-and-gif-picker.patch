@@ -1,0 +1,420 @@
+diff --git a/src/components/NewMessage/NewMessage.vue b/src/components/NewMessage/NewMessage.vue
+index 045fa8f..3f9e073 100644
+--- a/src/components/NewMessage/NewMessage.vue
++++ b/src/components/NewMessage/NewMessage.vue
+@@ -78,6 +78,11 @@
+ 							<IconEmoticonOutline :size="20" />
+ 						</template>
+ 					</NcButton>
++					<NewMessageGifPicker
++						v-if="!dialog && !messageToEdit"
++						:disabled="disabled"
++						:setReturnFocus="getContenteditable"
++						@select="sendGif" />
+ 				</div>
+ 
+ 				<div v-if="parentMessage || messageToEdit" class="new-message-form__quote">
+@@ -362,6 +367,7 @@ import NewMessageAbsenceInfo from './NewMessageAbsenceInfo.vue'
+ import NewMessageAttachments from './NewMessageAttachments.vue'
+ import NewMessageAudioRecorder from './NewMessageAudioRecorder.vue'
+ import NewMessageChatSummary from './NewMessageChatSummary.vue'
++import NewMessageGifPicker from './NewMessageGifPicker.vue'
+ import NewMessageNewFileDialog from './NewMessageNewFileDialog.vue'
+ import NewMessageTypingIndicator from './NewMessageTypingIndicator.vue'
+ import NewMessageUploadEditor from './NewMessageUploadEditor.vue'
+@@ -413,6 +419,7 @@ export default {
+ 		NewMessageAttachments,
+ 		NewMessageAudioRecorder,
+ 		NewMessageChatSummary,
++		NewMessageGifPicker,
+ 		NewMessageNewFileDialog,
+ 		NewMessageTypingIndicator,
+ 		NewMessageUploadEditor,
+@@ -1006,6 +1013,22 @@ export default {
+ 			})
+ 		},
+ 
++		/**
++		 * Send a GIF as its own message, whatever is being typed stays in the field
++		 *
++		 * @param {string} url - Link of the GIF, shown animated by Talk
++		 */
++		async sendGif(url) {
++			const payload = { message: url, token: this.token, silent: this.silentChat }
++			if (this.threadId) {
++				payload.threadId = this.threadId
++				payload.isThread = true
++			}
++			const temporaryMessage = this.createTemporaryMessage(payload)
++			EventBus.emit('scroll-chat-to-bottom', { smooth: true, force: true })
++			await this.postMessage(this.token, temporaryMessage)
++		},
++
+ 		async handleSubmit() {
+ 			// Submit event has enter key listener
+ 			// Handle edit here too
+diff --git a/src/components/NewMessage/NewMessageAttachments.vue b/src/components/NewMessage/NewMessageAttachments.vue
+index 30dc9f5..a7a3c8d 100644
+--- a/src/components/NewMessage/NewMessageAttachments.vue
++++ b/src/components/NewMessage/NewMessageAttachments.vue
+@@ -14,6 +14,7 @@
+ 			<IconPlus :size="20" />
+ 		</template>
+ 
++		<NcActionCaption v-if="canUploadFiles || canShareFiles" name="Partilhar" />
+ 		<NcActionButton
+ 			v-if="canUploadFiles"
+ 			closeAfterClick
+@@ -34,6 +35,10 @@
+ 				{{ shareFromNextcloudLabel }}
+ 			</NcActionButton>
+ 
++			<template v-if="fileTemplateOptions.length">
++				<NcActionSeparator />
++				<NcActionCaption name="Criar ficheiro" />
++			</template>
+ 			<NcActionButton
+ 				v-for="(provider, index) in fileTemplateOptions"
+ 				:key="index"
+@@ -47,6 +52,8 @@
+ 			</NcActionButton>
+ 		</template>
+ 
++		<NcActionSeparator v-if="canUploadFiles || canShareFiles" />
++		<NcActionCaption name="Na conversa" />
+ 		<NcActionButton
+ 			v-if="canCreatePoll"
+ 			closeAfterClick
+@@ -81,7 +88,9 @@
+ <script>
+ import { t } from '@nextcloud/l10n'
+ import NcActionButton from '@nextcloud/vue/components/NcActionButton'
++import NcActionCaption from '@nextcloud/vue/components/NcActionCaption'
+ import NcActions from '@nextcloud/vue/components/NcActions'
++import NcActionSeparator from '@nextcloud/vue/components/NcActionSeparator'
+ import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+ import IconFolder from 'vue-material-design-icons/Folder.vue' // Filled as in Files app icon
+ import IconForumOutline from 'vue-material-design-icons/ForumOutline.vue'
+@@ -97,7 +106,9 @@ export default {
+ 
+ 	components: {
+ 		NcActionButton,
++		NcActionCaption,
+ 		NcActions,
++		NcActionSeparator,
+ 		NcIconSvgWrapper,
+ 		// Icons
+ 		IconFolder,
+diff --git a/src/components/NewMessage/NewMessageGifPicker.vue b/src/components/NewMessage/NewMessageGifPicker.vue
+new file mode 100644
+index 0000000..d5a65f1
+--- /dev/null
++++ b/src/components/NewMessage/NewMessageGifPicker.vue
+@@ -0,0 +1,307 @@
++<!--
++  - SPDX-FileCopyrightText: 2026 Talk Gov.ao
++  - SPDX-License-Identifier: AGPL-3.0-or-later
++-->
++
++<template>
++	<NcPopover v-model:shown="open" popupRole="dialog" :setReturnFocus="setReturnFocus">
++		<template #trigger>
++			<NcButton
++				:disabled="disabled"
++				variant="tertiary"
++				aria-label="Enviar GIF"
++				title="GIF"
++				:aria-haspopup="true">
++				<template #icon>
++					<span class="gif-picker__badge" aria-hidden="true">GIF</span>
++				</template>
++			</NcButton>
++		</template>
++
++		<div class="gif-picker">
++			<label class="gif-picker__search">
++				<IconMagnify :size="18" />
++				<input
++					ref="searchInput"
++					v-model="query"
++					type="search"
++					placeholder="Pesquisar GIF"
++					aria-label="Pesquisar GIF">
++			</label>
++			<div class="gif-picker__chips">
++				<button
++					v-for="chip in CHIPS"
++					:key="chip"
++					type="button"
++					class="gif-picker__chip"
++					:class="{ 'gif-picker__chip--active': term === chip }"
++					@click="query = chip">
++					{{ chip }}
++				</button>
++			</div>
++
++			<div ref="grid" class="gif-picker__grid" @scroll.passive="onScroll">
++				<button
++					v-for="gif in gifs"
++					:key="gif.url"
++					type="button"
++					class="gif-picker__item"
++					:title="gif.title"
++					@click="select(gif)">
++					<img
++						:src="gif.thumbnail"
++						:alt="gif.title"
++						loading="lazy"
++						decoding="async">
++				</button>
++				<div v-if="loading" class="gif-picker__status">
++					A carregar…
++				</div>
++				<div v-else-if="!gifs.length" class="gif-picker__status">
++					{{ failed ? 'Não foi possível carregar os GIF' : 'Nenhum GIF encontrado' }}
++				</div>
++			</div>
++			<p class="gif-picker__credit">
++				GIF por GIPHY, através do servidor gov.ao
++			</p>
++		</div>
++	</NcPopover>
++</template>
++
++<script setup lang="ts">
++import axios from '@nextcloud/axios'
++import { generateOcsUrl } from '@nextcloud/router'
++import debounce from 'debounce'
++import { computed, nextTick, ref, watch } from 'vue'
++import NcButton from '@nextcloud/vue/components/NcButton'
++import NcPopover from '@nextcloud/vue/components/NcPopover'
++import IconMagnify from 'vue-material-design-icons/Magnify.vue'
++
++/*
++ * GIFs through the server's Giphy integration (the Smart picker's provider): the app never
++ * talks to Giphy itself, the thumbnails come through the server. A picked GIF is sent as its
++ * link, which Talk shows as the animated GIF.
++ */
++
++defineProps<{ disabled?: boolean, setReturnFocus?: () => HTMLElement | undefined }>()
++const emit = defineEmits<{ select: [url: string] }>()
++
++const CHIPS = ['Olá', 'Obrigado', 'Parabéns', 'OK', 'Rir', 'Aplausos', 'Bom dia', 'Café']
++
++type Gif = { url: string, thumbnail: string, title: string }
++
++const open = ref(false)
++const query = ref('')
++const term = computed(() => query.value.trim() || CHIPS[0]!)
++const gifs = ref<Gif[]>([])
++const cursor = ref<number | string | null>(null)
++const loading = ref(false)
++const failed = ref(false)
++const searchInput = ref<HTMLInputElement>()
++const grid = ref<HTMLElement>()
++
++let requestId = 0
++
++/**
++ * Fetch a page of results for the current term
++ *
++ * @param more - Next page, appended
++ */
++async function load(more = false) {
++	const id = ++requestId
++	loading.value = true
++	failed.value = false
++	try {
++		const { data } = await axios.get(generateOcsUrl('search/providers/giphy-search-gifs/search'), {
++			headers: { 'OCS-APIRequest': 'true', Accept: 'application/json' },
++			params: { term: term.value, limit: 24, ...(more && cursor.value !== null ? { cursor: cursor.value } : {}) },
++		})
++		if (id !== requestId) {
++			return
++		}
++		const result = data.ocs.data
++		const page = (result.entries ?? []).map((entry: { resourceUrl: string, thumbnailUrl: string, title: string }) => ({
++			url: entry.resourceUrl,
++			thumbnail: entry.thumbnailUrl,
++			title: entry.title,
++		}))
++		gifs.value = more ? [...gifs.value, ...page] : page
++		cursor.value = result.isPaginated && page.length ? result.cursor : null
++	} catch (error) {
++		if (id === requestId) {
++			console.error('Could not load GIFs', error)
++			failed.value = true
++		}
++	} finally {
++		if (id === requestId) {
++			loading.value = false
++		}
++	}
++}
++
++const debouncedLoad = debounce(() => load(), 350)
++
++watch(term, () => {
++	grid.value?.scrollTo({ top: 0 })
++	debouncedLoad()
++})
++
++watch(open, (isOpen) => {
++	if (isOpen) {
++		if (!gifs.value.length) {
++			load()
++		}
++		nextTick(() => searchInput.value?.focus())
++	}
++})
++
++/**
++ * Load the next page when the end of the grid comes near
++ */
++function onScroll() {
++	const el = grid.value
++	if (el && !loading.value && cursor.value !== null && el.scrollTop + el.clientHeight > el.scrollHeight - 200) {
++		load(true)
++	}
++}
++
++/**
++ * Send a GIF
++ *
++ * @param gif - The picked GIF
++ */
++function select(gif: Gif) {
++	emit('select', gif.url)
++	open.value = false
++}
++</script>
++
++<style scoped>
++.gif-picker {
++	display: flex;
++	flex-direction: column;
++	gap: 10px;
++	width: 360px;
++	height: 440px;
++	padding: 12px;
++	box-sizing: border-box;
++}
++
++.gif-picker__badge {
++	padding: 1px 4px;
++	border: 1.5px solid currentColor;
++	border-radius: 5px;
++	font-size: 10px;
++	font-weight: 800;
++	letter-spacing: 0.02em;
++	line-height: 1.2;
++}
++
++.gif-picker__search {
++	display: flex;
++	align-items: center;
++	gap: 8px;
++	height: 38px;
++	padding: 0 12px;
++	border-radius: 19px;
++	background: var(--color-background-dark);
++	color: var(--color-text-maxcontrast);
++}
++
++.gif-picker__search input {
++	flex: 1;
++	min-width: 0;
++	height: 100%;
++	margin: 0;
++	padding: 0;
++	border: none !important;
++	outline: none;
++	box-shadow: none !important;
++	background: transparent !important;
++	color: var(--color-main-text);
++	font-size: 14px;
++}
++
++.gif-picker__chips {
++	display: flex;
++	gap: 6px;
++	overflow-x: auto;
++	scrollbar-width: none;
++}
++
++.gif-picker__chip {
++	flex: none;
++	height: 28px;
++	min-height: 0;
++	margin: 0;
++	padding: 0 12px;
++	border: 1px solid var(--color-border);
++	border-radius: 14px;
++	background: transparent;
++	color: var(--color-main-text);
++	font-size: 13px;
++	font-weight: 500;
++	cursor: pointer;
++}
++
++.gif-picker__chip--active {
++	border-color: var(--color-primary-element);
++	background: var(--color-primary-element);
++	color: var(--color-primary-element-text);
++}
++
++.gif-picker__grid {
++	flex: 1;
++	display: grid;
++	grid-template-columns: repeat(3, 1fr);
++	grid-auto-rows: max-content;
++	gap: 6px;
++	overflow-y: auto;
++	align-content: start;
++}
++
++.gif-picker__item {
++	display: block;
++	width: 100%;
++	aspect-ratio: 1;
++	min-height: 0;
++	margin: 0;
++	padding: 0;
++	overflow: hidden;
++	border: none;
++	border-radius: 10px;
++	background: var(--color-background-dark);
++	cursor: pointer;
++}
++
++.gif-picker__item img {
++	display: block;
++	width: 100%;
++	height: 100%;
++	object-fit: cover;
++	transition: transform 200ms ease;
++}
++
++.gif-picker__item:hover img {
++	transform: scale(1.04);
++}
++
++.gif-picker__item:focus-visible {
++	outline: 2px solid var(--color-primary-element);
++	outline-offset: 2px;
++}
++
++.gif-picker__status {
++	grid-column: 1 / -1;
++	padding: 24px 0;
++	color: var(--color-text-maxcontrast);
++	text-align: center;
++}
++
++.gif-picker__credit {
++	margin: 0;
++	color: var(--color-text-maxcontrast);
++	font-size: 11px;
++	text-align: center;
++}
++</style>

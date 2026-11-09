@@ -3473,3 +3473,127 @@ body {
 :root body .v-popper__popper .action-button:has(.action-button__description) .action-button__text {
 	white-space: normal;
 }
+
+/* Menu icons drawn by Talk's SVG wrapper are 34px wide where the others are 20px: one column */
+:root body .v-popper__popper .action-button > .icon-vue:first-child,
+:root body .v-popper__popper .action-link > .icon-vue:first-child {
+	flex: none;
+	width: 20px !important;
+	min-width: 20px !important;
+	height: 20px !important;
+	min-height: 20px !important;
+	color: var(--tg-text-mid);
+}
+
+/* Group titles inside menus ("Partilhar", "Criar ficheiro", "Na conversa") */
+:root body .v-popper__popper li.app-navigation-caption {
+	margin: 0 !important;
+	padding: 8px 10px 4px !important;
+	color: var(--tg-text-soft) !important;
+	font-size: 11.5px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.04em;
+	line-height: 1.2;
+	text-transform: uppercase;
+	opacity: 1 !important;
+}
+
+:root body .v-popper__popper li.app-navigation-caption::after {
+	display: none !important;
+}
+
+/* Keyboard focus moved into a menu when it opens: the soft highlight, not a ring */
+:root body .v-popper__popper :is(.action-button, .action-link, .action-router):focus-visible {
+	outline: none !important;
+	background: var(--tg-soft) !important;
+}
+
+/* Emoji and GIF buttons side by side at the start of the message field */
+:root body .new-message-form__emoji-picker {
+	display: flex !important;
+	gap: 2px;
+	width: auto !important;
+}
+
+:root body .new-message-form .rich-contenteditable__input {
+	padding-inline-start: 70px !important;
+}
+
+/* ================================================================ Emoji picker */
+/* Category tabs in soft grey with the active one in the accent colour (a short rounded bar),
+   quiet sticky category titles, larger emoji with a round hover. "Mais utilizados" keeps the
+   recent and favourite ones at the top. */
+
+:root body .emoji-mart {
+	border: none !important;
+	background: transparent !important;
+	font-family: var(--tg-font) !important;
+}
+
+:root body .emoji-mart-anchors {
+	padding: 0 6px !important;
+}
+
+:root body .emoji-mart-anchor {
+	color: var(--tg-text-soft) !important;
+	transition: color 120ms ease;
+}
+
+:root body .emoji-mart-anchor:hover {
+	color: var(--tg-text) !important;
+}
+
+:root body .emoji-mart-anchor-selected {
+	color: var(--tg-accent) !important;
+}
+
+:root body .emoji-mart-anchor-bar {
+	height: 3px !important;
+	border-radius: 3px;
+	background-color: var(--tg-accent) !important;
+}
+
+:root body .emoji-mart-category-label,
+:root body .emoji-mart-category-label h3 {
+	background: var(--tg-card) !important;
+	color: var(--tg-text-soft) !important;
+	font-size: 11.5px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+:root body .emoji-mart-emoji {
+	border-radius: 10px;
+	transition: background-color 100ms ease, transform 100ms ease;
+}
+
+:root body .emoji-mart-emoji:hover {
+	background: var(--tg-soft) !important;
+	transform: scale(1.12);
+}
+
+:root body .emoji-mart-emoji:hover::before {
+	display: none !important;
+}
+
+:root body .emoji-mart .emoji-mart-category-label h3.emoji-mart-category-label,
+:root body .emoji-mart h3.emoji-mart-category-label {
+	color: var(--tg-text-soft) !important;
+}
+
+/* Emoji search: the app's soft pill, the placeholder says what it is */
+:root body .emoji-mart .search__wrapper .input-field__label {
+	display: none !important;
+}
+
+:root body .emoji-mart .search__wrapper .input-field__input {
+	border-radius: 20px !important;
+	background: var(--tg-soft) !important;
+	box-shadow: none !important;
+	padding-inline-start: 14px !important;
+}
+
+:root body .emoji-mart .search__wrapper .input-field__input:focus {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--tg-accent) 40%, transparent) !important;
+}
