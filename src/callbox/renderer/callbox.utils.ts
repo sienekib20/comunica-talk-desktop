@@ -6,10 +6,10 @@
 import type { HowlOptions } from 'howler'
 import type { UserStatusPrivate } from '../../talk/renderer/UserStatus/userStatus.types.ts'
 
-import { generateFilePath } from '@nextcloud/router'
 import { Howl } from 'howler'
 import { getAppConfigValue } from '../../shared/appConfig.service.ts'
 import { browserStorage } from '../../shared/browserStorage.service.ts'
+import { getNotificationSoundUrl } from '../../shared/notificationSounds.ts'
 
 /**
  * Play ringtone
@@ -28,7 +28,7 @@ export function playRingtone() {
 	}
 
 	const howlPayload: HowlOptions = {
-		src: [generateFilePath('notifications', 'img', 'talk.ogg')],
+		src: [getNotificationSoundUrl('talk.ogg')],
 		html5: true, // to access HTMLAudioElement property 'sinkId'
 		volume: 0.5,
 		loop: true,

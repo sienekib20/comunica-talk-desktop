@@ -13,13 +13,13 @@
 import { emit } from '@nextcloud/event-bus'
 import { t } from '@nextcloud/l10n'
 import { listen } from '@nextcloud/notify_push'
-import { generateFilePath } from '@nextcloud/router'
 import { Howl } from 'howler'
 import { computed } from 'vue'
 import { appData } from '../../../app/AppData.js'
 import { checkCurrentUserHasPendingCall } from '../../../callbox/renderer/callbox.service.ts'
 import { getAppConfigValue } from '../../../shared/appConfig.service.ts'
 import { subscribeBroadcast } from '../../../shared/broadcast.service.ts'
+import { getNotificationSoundUrl } from '../../../shared/notificationSounds.ts'
 import { useAppConfigValue } from '../Settings/useAppConfigValue.ts'
 import { openConversation } from '../TalkWrapper/talk.service.ts'
 import { useUserStatusStore } from '../UserStatus/userStatus.store.ts'
@@ -157,7 +157,7 @@ export function createNotificationStore() {
 		}
 
 		const sound = new Howl({
-			src: [generateFilePath('notifications', 'img', 'notification.ogg')],
+			src: [getNotificationSoundUrl('notification.ogg')],
 			volume: 0.5,
 		})
 		sound.play()
