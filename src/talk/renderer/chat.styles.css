@@ -2427,15 +2427,30 @@ body {
 	font-size: 14px;
 	font-weight: 500;
 	line-height: 1.35;
-	/* Toastify moves the toast with an inline transform: these properties add to it */
-	translate: 0 -10px;
-	scale: 0.97;
-	transition: opacity 180ms ease, translate 320ms cubic-bezier(0.2, 0.9, 0.3, 1.15), scale 320ms cubic-bezier(0.2, 0.9, 0.3, 1.15), top 260ms ease !important;
+	/* Toastify creates the toast already "on", so a transition never runs on the way in: it
+	   slides in with an animation. translate/scale add to Toastify's inline transform.
+	   On the way out Toastify removes "on" and the fade below runs; the others move up. */
+	animation: tg-toast-in 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+	transition: opacity 200ms ease, translate 200ms ease, top 260ms cubic-bezier(0.2, 0.9, 0.3, 1) !important;
 }
 
-:root body .toastify.dialogs.on {
-	translate: 0 0;
-	scale: 1;
+:root body .toastify.dialogs:not(.on) {
+	opacity: 0;
+	translate: 24px 0;
+}
+
+@keyframes tg-toast-in {
+	from {
+		opacity: 0;
+		translate: 32px 0;
+		scale: 0.96;
+	}
+
+	to {
+		opacity: 1;
+		translate: 0 0;
+		scale: 1;
+	}
 }
 
 :root body .toastify.dialogs.toastify-top {
@@ -2532,8 +2547,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
 	:root body .toastify.dialogs {
+		animation: none;
 		translate: none;
-		scale: none;
 		transition: opacity 120ms ease !important;
 	}
 }
