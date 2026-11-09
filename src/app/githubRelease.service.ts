@@ -110,6 +110,11 @@ let cachedNewRelease: ReleaseInfo | null = null
  * @return true if there is a new version
  */
 export async function checkForUpdate({ forceRequest = false }: { forceRequest?: boolean } = {}): Promise<ReleaseInfo | null> {
+	// The Mac App Store updates its apps itself; a store app must not offer other downloads
+	if (process.mas) {
+		return null
+	}
+
 	if (cachedNewRelease && !forceRequest) {
 		return cachedNewRelease
 	}
