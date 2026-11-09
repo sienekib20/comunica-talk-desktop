@@ -2755,6 +2755,16 @@ body {
 	top: calc(var(--header-height) + 21px) !important;
 }
 
+/* "…" and ✕ on one row: same size, same centre, the menu just before the close button */
 :root body #content-vue > .app-sidebar .content__actions {
-	top: calc(var(--header-height) + 8px) !important;
+	top: calc(var(--header-height) + 21px) !important;
+	inset-inline-end: calc(16px + 36px + 6px) !important;
+}
+
+:root body #content-vue > .app-sidebar .content__actions .button-vue {
+	width: 36px !important;
+	min-width: 36px !important;
+	height: 36px !important;
+	min-height: 36px !important;
+	border-radius: 50% !important;
 }
