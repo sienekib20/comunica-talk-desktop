@@ -4531,3 +4531,9 @@ body {
 		animation: none;
 	}
 }
+
+/* Buttons that get the focus when a popover opens ("Agendar uma reunião"): a soft ring */
+:root body .v-popper__popper .button-vue:focus-visible {
+	outline: none !important;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--tg-accent) 35%, transparent) !important;
+}

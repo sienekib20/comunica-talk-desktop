@@ -1,0 +1,113 @@
+diff --git a/src/components/LeftSidebar/ConversationsList/ConversationItem.vue b/src/components/LeftSidebar/ConversationsList/ConversationItem.vue
+index e34b316..d0ce269 100644
+--- a/src/components/LeftSidebar/ConversationsList/ConversationItem.vue
++++ b/src/components/LeftSidebar/ConversationsList/ConversationItem.vue
+@@ -90,6 +90,9 @@
+ 					{{ labelRead }}
+ 				</NcActionButton>
+ 
++				<!-- Talk Gov.ao: the actions in groups, split by lines -->
++				<NcActionSeparator key="separator-organise" />
++
+ 				<NcActionButton
+ 					key="show-notifications"
+ 					isMenu
+@@ -100,11 +103,15 @@
+ 					{{ t('spreed', 'Notifications') }}
+ 				</NcActionButton>
+ 
+-				<NcActionButton key="show-settings" closeAfterClick @click="showConversationSettings">
++				<NcActionButton
++					v-if="supportTags"
++					key="show-tags"
++					isMenu
++					@click="submenu = 'tags'">
+ 					<template #icon>
+-						<IconCogOutline :size="20" />
++						<IconTagMultipleOutline :size="20" />
+ 					</template>
+-					{{ t('spreed', 'Conversation settings') }}
++					{{ t('spreed', 'Tags') }}
+ 				</NcActionButton>
+ 
+ 				<NcActionButton
+@@ -119,17 +126,17 @@
+ 					{{ labelArchive }}
+ 				</NcActionButton>
+ 
+-				<NcActionButton
+-					v-if="supportTags"
+-					key="show-tags"
+-					isMenu
+-					@click="submenu = 'tags'">
++				<NcActionSeparator key="separator-settings" />
++
++				<NcActionButton key="show-settings" closeAfterClick @click="showConversationSettings">
+ 					<template #icon>
+-						<IconTagMultipleOutline :size="20" />
++						<IconCogOutline :size="20" />
+ 					</template>
+-					{{ t('spreed', 'Tags') }}
++					{{ t('spreed', 'Conversation settings') }}
+ 				</NcActionButton>
+ 
++				<NcActionSeparator v-if="item.canLeaveConversation || item.canDeleteConversation" key="separator-leave" />
++
+ 				<NcActionButton
+ 					v-if="item.canLeaveConversation"
+ 					key="leave-conversation"
+diff --git a/src/components/TopBar/CallButton.vue b/src/components/TopBar/CallButton.vue
+index a5cd953..a9363ef 100644
+--- a/src/components/TopBar/CallButton.vue
++++ b/src/components/TopBar/CallButton.vue
+@@ -16,6 +16,7 @@
+ 			<NcLoadingIcon v-if="isJoiningCall || loading" :size="20" />
+ 			<IconPhoneDialOutline v-else-if="isPhoneRoom" :size="20" />
+ 			<IconPhoneOutline v-else-if="silentCall" :size="20" />
++			<IconVideo v-else-if="isMeetingRoom" :size="20" />
+ 			<IconPhone v-else :size="20" />
+ 		</template>
+ 		<template v-if="showButtonText" #default>
+@@ -115,6 +116,7 @@ import IconPhoneDialOutline from 'vue-material-design-icons/PhoneDialOutline.vue
+ import IconPhoneHangupOutline from 'vue-material-design-icons/PhoneHangupOutline.vue'
+ import IconPhoneOffOutline from 'vue-material-design-icons/PhoneOffOutline.vue'
+ import IconPhoneOutline from 'vue-material-design-icons/PhoneOutline.vue'
++import IconVideo from 'vue-material-design-icons/Video.vue'
+ import { useGetToken } from '../../composables/useGetToken.ts'
+ import { useIsInCall } from '../../composables/useIsInCall.js'
+ import { useJoinCall } from '../../composables/useJoinCall.ts'
+@@ -147,6 +149,7 @@ export default {
+ 		IconPhoneHangupOutline,
+ 		IconPhoneOffOutline,
+ 		IconPhoneOutline,
++		IconVideo,
+ 		NcLoadingIcon,
+ 	},
+ 
+@@ -295,15 +298,25 @@ export default {
+ 			return t('spreed', 'More actions')
+ 		},
+ 
++		/**
++		 * Talk Gov.ao: a group or public conversation is a meeting room, where a call is a meeting
++		 */
++		isMeetingRoom() {
++			return [CONVERSATION.TYPE.GROUP, CONVERSATION.TYPE.PUBLIC].includes(this.conversation.type)
++		},
++
+ 		startCallLabel() {
+ 			if (this.hasCall && !this.isInLobby) {
+-				return t('spreed', 'Join call')
++				return this.isMeetingRoom ? 'Entrar na reunião' : t('spreed', 'Join call')
+ 			}
+ 
+ 			if (this.isJoiningCall) {
+ 				return t('spreed', 'Connecting …')
+ 			}
+ 
++			if (this.isMeetingRoom) {
++				return this.silentCall ? 'Iniciar reunião em silêncio' : 'Iniciar reunião'
++			}
+ 			return this.silentCall ? t('spreed', 'Start call silently') : t('spreed', 'Start call')
+ 		},
+ 
