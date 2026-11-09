@@ -2710,7 +2710,9 @@ body {
 }
 
 :root body #content-vue > .app-sidebar {
-	margin: 0 !important;
+	/* Not margin-inline-end: the library slides the sidebar in and out with it */
+	margin-inline-start: 0 !important;
+	margin-block: 0 !important;
 	padding-top: var(--header-height);
 	height: 100% !important;
 	box-sizing: border-box;
@@ -2851,4 +2853,46 @@ body {
 :root body .modal-container .button-vue:focus:not(:focus-visible) {
 	outline: none !important;
 	box-shadow: none !important;
+}
+
+/* Right sidebar: slides in from the edge with a soft deceleration, its content fading in;
+   leaves quicker. Switching tabs (Participantes / Itens partilhados) fades the new tab in. */
+:root body #content-vue > .app-sidebar.slide-right-enter-active {
+	transition: margin-inline-end 340ms cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+}
+
+:root body #content-vue > .app-sidebar.slide-right-leave-active {
+	transition: margin-inline-end 220ms cubic-bezier(0.4, 0, 1, 1) !important;
+}
+
+:root body #content-vue > .app-sidebar.slide-right-enter-active > * {
+	animation: tg-fade-up 360ms 60ms cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+}
+
+:root body .app-sidebar__tab--active {
+	animation: tg-fade-up 240ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes tg-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root body #content-vue > .app-sidebar.slide-right-enter-active,
+	:root body #content-vue > .app-sidebar.slide-right-leave-active {
+		transition: none !important;
+	}
+
+	:root body #content-vue > .app-sidebar.slide-right-enter-active > *,
+	:root body .app-sidebar__tab--active {
+		animation: none;
+	}
 }
