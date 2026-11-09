@@ -2896,3 +2896,81 @@ body {
 		animation: none;
 	}
 }
+
+/* ================================================================ One top row */
+/* The conversation header shares the top row with the window's own buttons (main menu, avatar):
+   no empty strip above it. The title bar no longer catches clicks; it stays draggable where it
+   is empty, and so is the conversation header, except for its buttons. */
+
+:root {
+	/* Width of the window's buttons at the top right: main menu and avatar, plus the native
+	   window controls on Windows (titlebar-area-* reserve them; 0 on macOS) */
+	--tg-window-buttons: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 92px);
+	--tg-top-row: 64px;
+}
+
+:root body .main-view {
+	padding-top: 0 !important;
+}
+
+:root body #header.title-bar {
+	pointer-events: none;
+}
+
+/* Main menu and avatar: centred in the 64px row */
+:root body #header .title-bar__item {
+	pointer-events: auto;
+	transform: translateY(calc((var(--tg-top-row) - var(--header-height)) / 2));
+}
+
+/* Left and right panel toggles in the same row */
+:root body #content-vue > .app-navigation .app-navigation-toggle-wrapper {
+	top: calc((var(--tg-top-row) - 40px) / 2 - var(--header-height)) !important;
+}
+
+:root body #content-vue > .button-vue {
+	top: calc((var(--tg-top-row) - 40px) / 2) !important;
+	inset-inline-end: calc(12px + var(--tg-window-buttons)) !important;
+}
+
+/* With the right sidebar closed (its open button is shown), the header's buttons stop before
+   that button and the window's buttons */
+:root body #content-vue:has(> .button-vue) .top-bar {
+	margin-inline-end: calc(var(--tg-window-buttons) + 12px + 40px + 8px) !important;
+}
+
+/* Dragging the window: the empty parts of the header; its controls stay clickable */
+:root body .top-bar {
+	-webkit-app-region: drag;
+}
+
+:root body .top-bar button,
+:root body .top-bar a,
+:root body .top-bar input,
+:root body .top-bar [role='button'],
+:root body .top-bar .conversation-icon,
+:root body .top-bar .conversation-header,
+:root body .top-bar .v-popper,
+:root body .app-navigation-toggle-wrapper,
+:root body #content-vue > .button-vue,
+:root body #header .title-bar__item {
+	-webkit-app-region: no-drag;
+}
+
+/* The inside of the chat a touch softer than pure white; the header, the composer and received
+   bubbles stay white on it */
+:root {
+	--tg-chat-surface: #f6f7f9;
+	--tg-bubble-in: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--tg-chat-surface: #0e171d;
+		--tg-bubble-in: #202c33;
+	}
+}
+
+:root body .main-view .top-bar {
+	background: var(--tg-card) !important;
+}
