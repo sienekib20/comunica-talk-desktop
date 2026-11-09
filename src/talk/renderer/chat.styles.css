@@ -2974,3 +2974,82 @@ body {
 :root body .main-view .top-bar {
 	background: var(--tg-card) !important;
 }
+
+/* ================================================================ Pinned message bar */
+/* A light card at the top of the chat: the pin in an accent circle, who pinned it as a quiet
+   caption, the message on one line. No black focus frame, no side bar. */
+
+:root body .message__pinned {
+	margin: 8px 16px 4px !important;
+	padding: 0 !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 14px !important;
+	background: color-mix(in srgb, var(--tg-card) 92%, transparent) !important;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px rgba(16, 24, 40, 0.08) !important;
+	overflow: hidden;
+}
+
+:root body .message__pinned::before {
+	display: none !important;
+}
+
+:root body .message__pinned .list-item {
+	padding: 8px 12px !important;
+	border: none !important;
+	border-radius: 0 !important;
+	outline: none !important;
+	box-shadow: none !important;
+	background: transparent !important;
+	transition: background-color 120ms ease;
+}
+
+:root body .message__pinned .list-item::before,
+:root body .message__pinned .list-item::after {
+	display: none !important;
+}
+
+:root body .message__pinned .list-item:hover {
+	background: var(--tg-soft) !important;
+}
+
+:root body .message__pinned .list-item:focus-within:has(:focus-visible) {
+	box-shadow: inset 0 0 0 2px var(--tg-accent) !important;
+}
+
+:root body .message__pinned .list-item__anchor {
+	gap: 12px;
+	align-items: center !important;
+}
+
+:root body .message__pinned .pin-icon {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--tg-accent) 12%, transparent);
+	color: var(--tg-accent);
+}
+
+:root body .message__pinned .pin-icon svg {
+	width: 17px;
+	height: 17px;
+}
+
+:root body .message__pinned .list-item-content__name {
+	color: var(--tg-text-soft) !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	line-height: 1.3;
+}
+
+:root body .message__pinned .list-item-content__subname {
+	color: var(--tg-text) !important;
+	font-size: 14px !important;
+	line-height: 1.35;
+	white-space: nowrap !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
