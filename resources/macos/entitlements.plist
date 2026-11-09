@@ -14,5 +14,11 @@
 		<true/>
 		<key>com.apple.security.network.client</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>O Talk Gov.ao usa a câmara para mostrar o seu vídeo nas videochamadas.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>O Talk Gov.ao usa o microfone para a sua voz nas chamadas e para gravar mensagens de voz.</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 	</dict>
 </plist>
