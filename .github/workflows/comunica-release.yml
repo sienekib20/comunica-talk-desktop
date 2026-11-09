@@ -20,6 +20,9 @@ permissions:
 
 env:
   MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+  # npm 11 refuses dependencies fetched from git unless allowed. Electron's
+  # node-gyp and a Windows registry helper come from git (also for Talk's npm ci).
+  npm_config_allow_git: all
 
 jobs:
   build:
