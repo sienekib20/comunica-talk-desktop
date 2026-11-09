@@ -217,6 +217,84 @@ function enterDialog(mask: HTMLElement) {
 	}, SPRING_ENTER)
 }
 
+/* ---------------------------------------------------------------- Conversation groups */
+
+/**
+ * The conversations that follow a group header ("Favoritos", "Outro") in the list, up to the next header.
+ * The list is flat (virtual scroller): a group's rows are siblings of its header, not children.
+ *
+ * @param header - The group header row
+ */
+function groupRows(header: Element): HTMLElement[] {
+	const rows: HTMLElement[] = []
+	for (let el = header.nextElementSibling; el && !el.classList.contains('tag-header'); el = el.nextElementSibling) {
+		rows.push(el as HTMLElement)
+	}
+	return rows
+}
+
+let replaying = false
+
+/**
+ * Opening and closing a group animate its rows: closing folds them away before Talk removes them,
+ * opening lets the new rows drop in one after the other.
+ *
+ * @param event - Click anywhere in the conversations list
+ */
+function onGroupToggle(event: MouseEvent) {
+	if (replaying) {
+		return
+	}
+	const target = event.target as HTMLElement
+	const header = target.closest('.tag-header')
+	// The group's own actions menu ("…") is not a toggle
+	if (!header || target.closest('.action-item')) {
+		return
+	}
+	const expanded = header.querySelector('[aria-expanded]')?.getAttribute('aria-expanded') === 'true'
+	const before = new Set(groupRows(header))
+
+	if (expanded && before.size > 0) {
+		// Fold the rows first, then let Talk close the group
+		event.preventDefault()
+		event.stopImmediatePropagation()
+		const rows = [...before].filter((row) => {
+			const box = row.getBoundingClientRect()
+			return box.bottom > 0 && box.top < window.innerHeight
+		}).slice(0, 24)
+		// Opacity and position only: changing the heights would make the virtual list re-render
+		const animations = rows.map((row, i) => row.animate([
+			{ opacity: 1, transform: 'translateY(0)' },
+			{ opacity: 0, transform: 'translateY(-10px)' },
+		], { duration: 160, delay: Math.min(i, 8) * 8, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }))
+		// The same control, found again: the list may have re-rendered the header meanwhile
+		const title = header.querySelector('.app-navigation-entry-link')?.getAttribute('title')
+		const isLink = !!target.closest('.app-navigation-entry-link')
+		Promise.all(animations.map((a) => a.finished)).catch(() => {}).then(() => {
+			const current = [...document.querySelectorAll('.tag-header')]
+				.find((h) => h.querySelector('.app-navigation-entry-link')?.getAttribute('title') === title)
+			const control = (isLink ? current?.querySelector<HTMLElement>('.app-navigation-entry-link') : null)
+				?? (target.isConnected ? target : current?.querySelector<HTMLElement>('.app-navigation-entry-link'))
+			replaying = true
+			control?.click()
+			replaying = false
+			// Rows the virtual list keeps get their normal look back
+			requestAnimationFrame(() => animations.forEach((a) => a.cancel()))
+		})
+		return
+	}
+
+	// Opening: once Talk has rendered the rows, let the new ones drop in
+	setTimeout(() => {
+		groupRows(header).filter((row) => !before.has(row)).slice(0, 16).forEach((row, i) => {
+			row.animate([
+				{ opacity: 0, transform: 'translateY(-8px)' },
+				{ opacity: 1, transform: 'translateY(0)' },
+			], { duration: 240, delay: i * 18, easing: 'cubic-bezier(0.2, 0.9, 0.3, 1)', fill: 'backwards' })
+		})
+	}, 30)
+}
+
 /* ---------------------------------------------------------------- Wiring */
 
 /**
@@ -232,6 +310,8 @@ export function applyMotion(): void {
 	}
 
 	scanScrollAreas()
+
+	document.addEventListener('click', onGroupToggle, true)
 
 	window.addEventListener('hashchange', () => {
 		conversationOpenedAt = performance.now()
