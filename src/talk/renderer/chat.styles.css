@@ -2368,3 +2368,37 @@ body {
 		animation-duration: 0.01ms !important;
 	}
 }
+
+/* ================================================================ Message field: live formatting */
+/* While typing, **bold**, *italic*, ~strike~ and `code` already look as they will be sent.
+   The markers stay in place (they are part of the text) but fade back. See utils/composerMarkdown.ts */
+
+.rich-contenteditable__input .tg-md__mark {
+	color: var(--color-text-maxcontrast);
+}
+
+.rich-contenteditable__input .tg-md--bold .tg-md__text {
+	font-weight: 700;
+}
+
+.rich-contenteditable__input .tg-md--italic .tg-md__text {
+	font-style: italic;
+}
+
+.rich-contenteditable__input .tg-md--strike .tg-md__text {
+	text-decoration: line-through;
+}
+
+.rich-contenteditable__input .tg-md--code,
+.rich-contenteditable__input .tg-md--pre {
+	padding: 1px 4px;
+	border-radius: 6px;
+	background: var(--color-background-dark);
+	font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+	font-size: 0.92em;
+}
+
+.rich-contenteditable__input .tg-md--pre {
+	display: inline-block;
+	white-space: pre-wrap;
+}
