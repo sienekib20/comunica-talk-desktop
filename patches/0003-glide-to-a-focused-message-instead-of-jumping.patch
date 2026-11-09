@@ -1,0 +1,22 @@
+diff --git a/src/components/MessagesList/MessagesList.vue b/src/components/MessagesList/MessagesList.vue
+index 3ee74e7..894c795 100644
+--- a/src/components/MessagesList/MessagesList.vue
++++ b/src/components/MessagesList/MessagesList.vue
+@@ -1038,11 +1038,13 @@ export default {
+ 			this.$nextTick(() => {
+ 				if (smooth) {
+ 					const newTop = scrollElement.getBoundingClientRect().top - this.$refs.scrollerLoader.getBoundingClientRect().top
+-					if (this.$refs.scroller.scrollTop > newTop) {
+-						// Imitate scrolling the whole distance to the element
+-						// If this goes to scrollTop < LOAD_HISTORY_THRESHOLD, might initiate loading of old messages
++					const viewport = this.$refs.scroller.clientHeight
++					const distance = this.$refs.scroller.scrollTop - newTop
++					// A message far above: jump to one screen below it, then glide the last screen,
++					// instead of jumping onto it (a short way is glided all along)
++					if (distance > 2 * viewport) {
+ 						this.$refs.scroller.scrollTo({
+-							top: Math.max(LOAD_HISTORY_THRESHOLD, newTop),
++							top: Math.max(LOAD_HISTORY_THRESHOLD, newTop + viewport),
+ 							behavior: 'instant',
+ 						})
+ 					}

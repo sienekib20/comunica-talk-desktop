@@ -10,10 +10,12 @@ import IconArchiveOutline from 'vue-material-design-icons/ArchiveOutline.vue'
 import IconCogOutline from 'vue-material-design-icons/CogOutline.vue'
 import IconForumOutline from 'vue-material-design-icons/ForumOutline.vue'
 import IconHomeOutline from 'vue-material-design-icons/HomeOutline.vue'
+import IconImageMultipleOutline from 'vue-material-design-icons/ImageMultipleOutline.vue'
 import IconMessageTextOutline from 'vue-material-design-icons/MessageTextOutline.vue'
 import IconThemeLightDark from 'vue-material-design-icons/ThemeLightDark.vue'
 import IconWeatherNight from 'vue-material-design-icons/WeatherNight.vue'
 import IconWeatherSunny from 'vue-material-design-icons/WeatherSunny.vue'
+import MediaBrowser from '../MediaBrowser/MediaBrowser.vue'
 import { useAppConfigStore } from '../Settings/appConfig.store.ts'
 import { animate, reducedMotion, SPRING_MOVE } from '../utils/motion.ts'
 
@@ -46,6 +48,8 @@ function cycleTheme() {
 }
 
 const active = ref<Section>('chats')
+/** Media, documents and links of every conversation */
+const mediaOpen = ref(false)
 const unread = ref(0)
 const hasArchived = ref(false)
 
@@ -244,6 +248,14 @@ onBeforeUnmount(() => {
 
 		<div class="nav-rail__group">
 			<button
+				class="nav-rail__item"
+				aria-label="Multimédia, documentos e ligações"
+				data-tooltip="Multimédia, documentos e ligações"
+				@mousedown.prevent
+				@click="mediaOpen = true">
+				<IconImageMultipleOutline :size="20" />
+			</button>
+			<button
 				v-if="hasArchived"
 				class="nav-rail__item"
 				:class="{ 'nav-rail__item--active': active === 'archived' }"
@@ -274,6 +286,7 @@ onBeforeUnmount(() => {
 				<IconCogOutline :size="20" />
 			</button>
 		</div>
+		<MediaBrowser v-if="mediaOpen" @close="mediaOpen = false" />
 	</nav>
 </template>
 
