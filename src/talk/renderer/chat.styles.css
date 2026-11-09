@@ -4359,3 +4359,16 @@ body {
 :root body li.conversation .list-item .list-item__extra-actions {
 	margin-inline-start: 6px;
 }
+
+/* ...as tall as the taller card, not as the page */
+:root body .talk-dashboard__chats {
+	flex: none !important;
+	height: auto !important;
+	min-height: 0 !important;
+}
+
+:root body .talk-dashboard__chats > *,
+:root body .talk-dashboard__chats .dashboard-section {
+	height: auto !important;
+	min-height: 0 !important;
+}
