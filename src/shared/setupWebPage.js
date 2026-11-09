@@ -13,6 +13,7 @@ import { initAppConfig } from './appConfig.service.ts'
 import { BUILD_CONFIG } from './build.config.ts'
 import { initGlobals } from './globals/globals.js'
 import { setupInitialState } from './initialState.service.js'
+import { PT_PT_OVERRIDES } from './l10n/ptPT.overrides.ts'
 
 /**
  * @param {string} lang - language code, TS type: `${lang}_${countryCode}`|`${lang}`
@@ -38,9 +39,15 @@ async function tryLoadL10n(lang, resolver) {
  * @param {string} lang - language code, TS type: `${lang}_${countryCode}`|`${lang}`
  * @param {Function} resolver - function to import the translation bundle by language code,
  *                              for example, (lang) => import(`path/to/l10n/${lang}.json`)
+ * @param {{ lang: string, overrides: Record<string, string> }} [fallback] - for strings the bundle lacks
  */
-async function loadAndRegisterL10n(app, lang, resolver) {
-	const mayBeTranslations = await tryLoadL10n(lang, resolver)
+async function loadAndRegisterL10n(app, lang, resolver, fallback) {
+	let mayBeTranslations = await tryLoadL10n(lang, resolver)
+	if (mayBeTranslations && fallback) {
+		// Strings missing in this bundle: from a close language, then our own, rather than in English
+		const base = await tryLoadL10n(fallback.lang, resolver) ?? {}
+		mayBeTranslations = { ...base, ...fallback.overrides, ...mayBeTranslations }
+	}
 	if (mayBeTranslations) {
 		register(app, mayBeTranslations)
 		console.log(`Language pack "${lang}" for "${app}" loaded...`)
@@ -69,7 +76,9 @@ async function applyL10n() {
 
 	if (language !== 'en') {
 		await Promise.all([
-			loadAndRegisterL10n('spreed', language, (lang) => import(`@talk/l10n/${lang}.json`)),
+			loadAndRegisterL10n('spreed', language, (lang) => import(`@talk/l10n/${lang}.json`), language.replace('-', '_') === 'pt_PT'
+				? { lang: 'pt_BR', overrides: PT_PT_OVERRIDES }
+				: undefined),
 			loadAndRegisterL10n('talk_desktop', language, (lang) => import(`../../l10n/${lang}.json`)),
 		])
 	}
