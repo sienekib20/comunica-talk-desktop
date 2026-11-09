@@ -285,19 +285,6 @@ app.whenReady().then(async () => {
 		splashShownAt = Date.now()
 	})
 
-	/**
-	 * The splash screen kept open while the login page is loading, see below.
-	 *
-	 * @type {import('electron').BrowserWindow|undefined}
-	 */
-	let splashWindow
-
-	/**
-	 * With an enforced domain there is nothing to ask the user before logging in,
-	 * so the authentication window is skipped and the login page is opened right away.
-	 */
-	const isDirectLogin = Boolean(BUILD_CONFIG.domain && BUILD_CONFIG.enforceDomain)
-
 	ipcMain.once('appData:receive', async (event, newAppData) => {
 		appData.fromJSON(newAppData)
 
@@ -327,13 +314,6 @@ app.whenReady().then(async () => {
 		}
 
 		onReadyToShow(mainWindow, async () => {
-			// With an enforced domain the authentication window logs in on its own,
-			// so it is never shown. The splash screen stays up until the login page is ready.
-			if (createMainWindow === createAuthenticationWindow && isDirectLogin) {
-				splashWindow = welcomeWindow
-				return
-			}
-
 			await waitForSplash()
 
 			// Do not show the main window if it is the Talk Window opened in the background
@@ -456,24 +436,7 @@ app.whenReady().then(async () => {
 
 	ipcMain.handle('talk:focus', async () => focusMainWindow())
 
-	ipcMain.handle('authentication:openLoginWebView', async (event, serverUrl) => {
-		const result = await openLoginWebView(mainWindow, serverUrl, {
-			skipConfirmation: isDirectLogin,
-			onReadyToShow: () => {
-				splashWindow?.close()
-				splashWindow = undefined
-			},
-		})
-
-		// Login failed or was cancelled - fall back to the authentication window
-		if (result instanceof Error && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
-			splashWindow?.close()
-			splashWindow = undefined
-			mainWindow.show()
-		}
-
-		return result
-	})
+	ipcMain.handle('authentication:openLoginWebView', async (event, serverUrl) => openLoginWebView(mainWindow, serverUrl))
 
 	ipcMain.handle('authentication:login', async (event, newAppData) => {
 		appData.fromJSON(newAppData)
@@ -495,14 +458,7 @@ app.whenReady().then(async () => {
 			const authenticationWindow = createAuthenticationWindow()
 			createMainWindow = createAuthenticationWindow
 
-			if (isDirectLogin) {
-				// The authentication window logs in on its own and is never shown,
-				// the splash screen covers the gap until the login page is ready
-				splashWindow = createWelcomeWindow()
-				onReadyToShow(splashWindow, () => splashWindow?.show())
-			} else {
-				onReadyToShow(authenticationWindow, () => authenticationWindow.show())
-			}
+			onReadyToShow(authenticationWindow, () => authenticationWindow.show())
 
 			mainWindow.destroy()
 			mainWindow = authenticationWindow
