@@ -2687,10 +2687,17 @@ body {
 	height: 100% !important;
 }
 
-/* The conversations column keeps its place under the title bar */
+/* The conversations column starts at the top too: its search row shares the top row, to the
+   right of the window's traffic lights */
 :root body #content-vue > .app-navigation {
-	margin-top: var(--header-height) !important;
-	height: calc(100% - var(--header-height)) !important;
+	margin-top: 0 !important;
+	height: 100% !important;
+}
+
+:root body #content-vue > .app-navigation .new-conversation {
+	box-sizing: border-box;
+	min-height: var(--tg-top-row);
+	padding-block-start: 8px !important;
 }
 
 :root body .main-view {
@@ -2925,7 +2932,7 @@ body {
 
 /* Left and right panel toggles in the same row */
 :root body #content-vue > .app-navigation .app-navigation-toggle-wrapper {
-	top: calc((var(--tg-top-row) - 40px) / 2 - var(--header-height)) !important;
+	top: calc((var(--tg-top-row) - 40px) / 2) !important;
 }
 
 :root body #content-vue > .button-vue {
@@ -2939,11 +2946,9 @@ body {
 	margin-inline-end: calc(var(--tg-window-buttons) + 12px + 40px + 8px) !important;
 }
 
-/* Dragging the window: the empty parts of the header; its controls stay clickable */
-:root body .top-bar {
-	-webkit-app-region: drag;
-}
-
+/* Dragging the window: the title bar's empty part (it spans the top of this row); every control
+   in the row is cut out of it. The header itself is not a drag region: Chromium applies regions
+   in document order, so a later drag region would cover the panel toggle and swallow its clicks. */
 :root body .top-bar button,
 :root body .top-bar a,
 :root body .top-bar input,
@@ -2951,16 +2956,19 @@ body {
 :root body .top-bar .conversation-icon,
 :root body .top-bar .conversation-header,
 :root body .top-bar .v-popper,
+:root body .new-conversation .input-field,
+:root body .new-conversation button,
+:root body .new-conversation .v-popper,
 :root body .app-navigation-toggle-wrapper,
 :root body #content-vue > .button-vue,
 :root body #header .title-bar__item {
 	-webkit-app-region: no-drag;
 }
 
-/* The inside of the chat a touch softer than pure white; the header, the composer and received
-   bubbles stay white on it */
+/* The inside of the chat a soft grey, darker than the header, so the white received bubbles
+   and the date pills stand out from it and from its pattern */
 :root {
-	--tg-chat-surface: #f6f7f9;
+	--tg-chat-surface: #eceef1;
 	--tg-bubble-in: #ffffff;
 }
 
@@ -3340,5 +3348,72 @@ body {
 @media (prefers-color-scheme: dark) {
 	:root body .chatView {
 		background-image: url('./assets/chat-wallpaper-dark.svg') !important;
+	}
+}
+
+/* ================================================================ Forwarding: picking messages */
+/* While picking messages to forward, each message gets a round tick on the left, the whole row
+   is clickable and a picked row is tinted, as in WhatsApp. */
+
+:root body .messages-list__scroller li.message.message--selectable {
+	position: relative;
+	padding-inline-start: 44px !important;
+	border-radius: 12px;
+	cursor: pointer;
+	user-select: none;
+	transition: background-color 140ms ease, padding 200ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+:root body .messages-list__scroller li.message.message--selectable * {
+	cursor: pointer;
+}
+
+:root body .messages-list__scroller li.message.message--selected {
+	background: color-mix(in srgb, var(--tg-accent) 10%, transparent);
+}
+
+:root body .message__select {
+	position: absolute;
+	inset-inline-start: 12px;
+	top: 50%;
+	display: grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	box-sizing: border-box;
+	border: 2px solid var(--color-border-maxcontrast);
+	border-radius: 50%;
+	background: var(--tg-card);
+	color: transparent;
+	transform: translateY(-50%);
+	transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+	animation: tg-select-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+:root body .message--selected .message__select {
+	border-color: var(--tg-accent);
+	background: var(--tg-accent);
+	color: #ffffff;
+	transform: translateY(-50%) scale(1.06);
+}
+
+@keyframes tg-select-in {
+	from {
+		opacity: 0;
+		transform: translateY(-50%) scale(0.6);
+	}
+}
+
+/* The conversations column and the content meet at a thin line, with no strip of backdrop
+   between them */
+:root body #app-content-vue {
+	margin-inline-start: 0 !important;
+	border-inline-start: 1px solid rgba(16, 24, 40, 0.16);
+	box-shadow: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root body #app-content-vue {
+		border-inline-start-color: rgba(255, 255, 255, 0.08);
 	}
 }

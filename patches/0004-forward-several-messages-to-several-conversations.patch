@@ -1,0 +1,725 @@
+diff --git a/src/components/ChatView.vue b/src/components/ChatView.vue
+index 181c8e4..59be605 100644
+--- a/src/components/ChatView.vue
++++ b/src/components/ChatView.vue
+@@ -50,8 +50,12 @@
+ 			</TransitionWrapper>
+ 		</div>
+ 
++		<!-- Forwarding: the selected messages' bar takes the composer's place -->
++		<ForwardSelectionBar v-if="forwardSelection.token === token" :token="token" />
++
+ 		<!-- Input field -->
+ 		<NewMessage
++			v-show="forwardSelection.token !== token"
+ 			role="region"
+ 			:token="token"
+ 			hasTypingIndicator
+@@ -69,6 +73,7 @@ import IconAccountOutline from 'vue-material-design-icons/AccountOutline.vue'
+ import IconAlertOctagonOutline from 'vue-material-design-icons/AlertOctagonOutline.vue'
+ import IconChevronDoubleDown from 'vue-material-design-icons/ChevronDoubleDown.vue'
+ import GuestWelcomeWindow from './GuestWelcomeWindow.vue'
++import ForwardSelectionBar from './MessagesList/ForwardSelection/ForwardSelectionBar.vue'
+ import MessagesList from './MessagesList/MessagesList.vue'
+ import NewMessage from './NewMessage/NewMessage.vue'
+ import ThreadHeader from './RightSidebar/Threads/ThreadHeader.vue'
+@@ -82,6 +87,7 @@ import { getTalkConfig } from '../services/CapabilitiesManager.ts'
+ import { EventBus } from '../services/EventBus.ts'
+ import { useActorStore } from '../stores/actor.ts'
+ import { useChatExtrasStore } from '../stores/chatExtras.ts'
++import { useForwardSelectionStore } from '../stores/forwardSelection.ts'
+ import { useSettingsStore } from '../stores/settings.ts'
+ 
+ export default {
+@@ -94,6 +100,7 @@ export default {
+ 		NcEmptyContent,
+ 		NcIconSvgWrapper,
+ 		MessagesList,
++		ForwardSelectionBar,
+ 		NewMessage,
+ 		TransitionWrapper,
+ 		GuestWelcomeWindow,
+@@ -128,6 +135,7 @@ export default {
+ 			chatExtrasStore: useChatExtrasStore(),
+ 			actorStore: useActorStore(),
+ 			settingsStore: useSettingsStore(),
++			forwardSelection: useForwardSelectionStore(),
+ 			addFiles,
+ 		}
+ 	},
+diff --git a/src/components/MessagesList/ForwardSelection/ForwardPicker.vue b/src/components/MessagesList/ForwardSelection/ForwardPicker.vue
+new file mode 100644
+index 0000000..ed086b0
+--- /dev/null
++++ b/src/components/MessagesList/ForwardSelection/ForwardPicker.vue
+@@ -0,0 +1,396 @@
++<!--
++  - SPDX-FileCopyrightText: 2026 Talk Gov.ao
++  - SPDX-License-Identifier: AGPL-3.0-or-later
++-->
++
++<template>
++	<NcModal
++		size="small"
++		name="Reencaminhar para…"
++		class="forward-picker"
++		@close="close">
++		<div class="forward-picker__window">
++			<header class="forward-picker__header">
++				<h2 class="forward-picker__title">
++					Reencaminhar para…
++				</h2>
++				<p class="forward-picker__subtitle">
++					{{ selection.ids.length === 1 ? '1 mensagem' : `${selection.ids.length} mensagens` }}
++					· escolha uma ou mais conversas
++				</p>
++				<label class="forward-picker__search">
++					<IconMagnify :size="18" />
++					<input
++						ref="searchInput"
++						v-model="query"
++						type="search"
++						placeholder="Pesquisar conversas"
++						aria-label="Pesquisar conversas">
++				</label>
++				<TransitionGroup
++					v-if="targets.length"
++					tag="div"
++					name="forward-chip"
++					class="forward-picker__chips">
++					<button
++						v-for="target in targets"
++						:key="target.token"
++						class="forward-picker__chip"
++						type="button"
++						:title="`Remover ${target.displayName}`"
++						@click="toggleTarget(target.token)">
++						<ConversationIcon
++							:item="target"
++							:size="20"
++							hideFavorite
++							hideUserStatus
++							disableMenu />
++						<span>{{ target.displayName }}</span>
++						<IconClose :size="14" />
++					</button>
++				</TransitionGroup>
++			</header>
++
++			<ul class="forward-picker__list" role="listbox" aria-multiselectable="true">
++				<li
++					v-for="conversation in conversations"
++					:key="conversation.token"
++					class="forward-picker__row"
++					:class="{ 'forward-picker__row--selected': chosen.includes(conversation.token) }"
++					role="option"
++					:aria-selected="chosen.includes(conversation.token)"
++					tabindex="0"
++					@click="toggleTarget(conversation.token)"
++					@keydown.enter.prevent="toggleTarget(conversation.token)"
++					@keydown.space.prevent="toggleTarget(conversation.token)">
++					<ConversationIcon
++						:item="conversation"
++						:size="40"
++						hideUserStatus
++						disableMenu />
++					<span class="forward-picker__name">{{ conversation.displayName }}</span>
++					<span class="forward-picker__check" aria-hidden="true">
++						<IconCheck :size="16" />
++					</span>
++				</li>
++				<li v-if="!conversations.length" class="forward-picker__empty">
++					Nenhuma conversa encontrada
++				</li>
++			</ul>
++
++			<footer class="forward-picker__footer">
++				<span class="forward-picker__summary">
++					{{ targets.length ? targets.map((t) => t.displayName).join(', ') : 'Nenhuma conversa escolhida' }}
++				</span>
++				<NcButton
++					variant="primary"
++					:disabled="!chosen.length || sending"
++					@click="send">
++					<template #icon>
++						<NcLoadingIcon v-if="sending" :size="20" />
++						<IconSend v-else :size="20" />
++					</template>
++					{{ chosen.length > 1 ? `Reencaminhar (${chosen.length})` : 'Reencaminhar' }}
++				</NcButton>
++			</footer>
++		</div>
++	</NcModal>
++</template>
++
++<script setup lang="ts">
++import { showError, showSuccess } from '@nextcloud/dialogs'
++import { computed, nextTick, onMounted, ref } from 'vue'
++import { useStore } from 'vuex'
++import NcButton from '@nextcloud/vue/components/NcButton'
++import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
++import NcModal from '@nextcloud/vue/components/NcModal'
++import IconCheck from 'vue-material-design-icons/Check.vue'
++import IconClose from 'vue-material-design-icons/Close.vue'
++import IconMagnify from 'vue-material-design-icons/Magnify.vue'
++import IconSend from 'vue-material-design-icons/Send.vue'
++import ConversationIcon from '../../ConversationIcon.vue'
++import { CONVERSATION } from '../../../constants.ts'
++import { useForwardSelectionStore } from '../../../stores/forwardSelection.ts'
++
++/** The fields of a conversation used here */
++type Conversation = {
++	token: string
++	displayName: string
++	readOnly: number
++	type: number
++	isFavorite: boolean
++	lastActivity: number
++}
++
++const props = defineProps<{ token: string }>()
++const emit = defineEmits<{ close: [] }>()
++
++const store = useStore()
++const selection = useForwardSelectionStore()
++
++const query = ref('')
++const chosen = ref<string[]>([])
++const sending = ref(false)
++const searchInput = ref<HTMLInputElement>()
++
++/* Conversations the user can write in: favourites first, then the most recent */
++const postable = computed(() => (store.getters.conversationsList as Conversation[])
++	.filter((c) => c.readOnly === CONVERSATION.STATE.READ_WRITE && c.type !== CONVERSATION.TYPE.CHANGELOG)
++	.sort((a, b) => (Number(b.isFavorite) - Number(a.isFavorite)) || (b.lastActivity - a.lastActivity)))
++
++const conversations = computed(() => {
++	const q = query.value.trim().toLowerCase()
++	return q ? postable.value.filter((c) => String(c.displayName).toLowerCase().includes(q)) : postable.value
++})
++
++const targets = computed(() => chosen.value
++	.map((token) => postable.value.find((c) => c.token === token))
++	.filter(Boolean) as Conversation[])
++
++/**
++ * Pick or unpick a conversation
++ *
++ * @param token - Conversation
++ */
++function toggleTarget(token: string) {
++	const index = chosen.value.indexOf(token)
++	if (index === -1) {
++		chosen.value.push(token)
++	} else {
++		chosen.value.splice(index, 1)
++	}
++}
++
++/**
++ * Close the picker; the selection in the chat stays
++ */
++function close() {
++	emit('close')
++}
++
++/**
++ * Forward every selected message, oldest first, to every chosen conversation
++ */
++async function send() {
++	sending.value = true
++	const messages = [...selection.ids]
++		.sort((a, b) => a - b)
++		.map((id) => store.getters.message(props.token, id))
++		.filter(Boolean)
++	let failed = 0
++	for (const targetToken of chosen.value) {
++		for (const message of messages) {
++			try {
++				await store.dispatch('forwardMessage', { targetToken, messageToBeForwarded: message })
++			} catch (error) {
++				console.error('Error while forwarding a message', error)
++				failed++
++			}
++		}
++	}
++	sending.value = false
++
++	const total = messages.length * chosen.value.length
++	if (failed === total) {
++		showError('Não foi possível reencaminhar')
++		return
++	}
++	const what = messages.length === 1 ? 'Mensagem reencaminhada' : `${messages.length} mensagens reencaminhadas`
++	const where = targets.value.length === 1 ? `para ${targets.value[0]!.displayName}` : `para ${targets.value.length} conversas`
++	if (failed) {
++		showError(`${what} ${where}, mas ${failed} não foram enviadas`)
++	} else {
++		showSuccess(`${what} ${where}`)
++	}
++	selection.cancel()
++}
++
++onMounted(() => nextTick(() => searchInput.value?.focus()))
++</script>
++
++<style scoped>
++/* The window has its own title: NcModal's (kept for screen readers) is not shown */
++.forward-picker :deep(.modal-header__name) {
++	position: absolute;
++	width: 1px;
++	height: 1px;
++	overflow: hidden;
++	clip-path: inset(50%);
++}
++
++.forward-picker__window {
++	display: flex;
++	flex-direction: column;
++	height: min(640px, calc(100vh - 120px));
++}
++
++.forward-picker__header {
++	display: flex;
++	flex-direction: column;
++	gap: 10px;
++	padding: 20px 20px 12px;
++	border-bottom: 1px solid var(--color-border);
++}
++
++.forward-picker__title {
++	margin: 0;
++	padding-inline-end: 40px;
++	font-size: 20px;
++	font-weight: 700;
++	letter-spacing: -0.01em;
++}
++
++.forward-picker__subtitle {
++	margin: -6px 0 0;
++	color: var(--color-text-maxcontrast);
++	font-size: 13px;
++}
++
++.forward-picker__search {
++	display: flex;
++	align-items: center;
++	gap: 8px;
++	height: 40px;
++	padding: 0 14px;
++	border-radius: 20px;
++	background: var(--color-background-dark);
++	color: var(--color-text-maxcontrast);
++}
++
++.forward-picker__search input {
++	flex: 1;
++	min-width: 0;
++	height: 100%;
++	margin: 0;
++	padding: 0;
++	border: none !important;
++	outline: none;
++	box-shadow: none !important;
++	background: transparent !important;
++	color: var(--color-main-text);
++	font-size: 14px;
++}
++
++.forward-picker__chips {
++	display: flex;
++	flex-wrap: wrap;
++	gap: 6px;
++}
++
++.forward-picker__chip {
++	display: inline-flex;
++	align-items: center;
++	gap: 6px;
++	height: 30px;
++	min-height: 0;
++	margin: 0;
++	padding: 0 8px 0 4px;
++	border: none;
++	border-radius: 15px;
++	background: color-mix(in srgb, var(--color-primary-element) 12%, transparent);
++	color: var(--color-main-text);
++	font-size: 13px;
++	font-weight: 500;
++	cursor: pointer;
++}
++
++.forward-picker__chip span {
++	max-width: 140px;
++	overflow: hidden;
++	text-overflow: ellipsis;
++	white-space: nowrap;
++}
++
++.forward-chip-enter-active,
++.forward-chip-leave-active {
++	transition: opacity 160ms ease, transform 160ms ease;
++}
++
++.forward-chip-enter-from,
++.forward-chip-leave-to {
++	opacity: 0;
++	transform: scale(0.85);
++}
++
++.forward-picker__list {
++	flex: 1;
++	overflow-y: auto;
++	margin: 0;
++	padding: 6px 8px;
++	list-style: none;
++}
++
++.forward-picker__row {
++	display: flex;
++	align-items: center;
++	gap: 12px;
++	min-height: 56px;
++	padding: 6px 10px;
++	border-radius: 12px;
++	cursor: pointer;
++	transition: background-color 120ms ease;
++}
++
++.forward-picker__row:hover {
++	background: var(--color-background-hover);
++}
++
++.forward-picker__row:focus-visible {
++	outline: 2px solid var(--color-primary-element);
++	outline-offset: -2px;
++}
++
++.forward-picker__name {
++	flex: 1;
++	min-width: 0;
++	overflow: hidden;
++	font-size: 15px;
++	font-weight: 500;
++	text-overflow: ellipsis;
++	white-space: nowrap;
++}
++
++/* Round tick, filled when picked */
++.forward-picker__check {
++	display: grid;
++	place-items: center;
++	flex: none;
++	width: 22px;
++	height: 22px;
++	border: 2px solid var(--color-border-maxcontrast);
++	border-radius: 50%;
++	color: transparent;
++	transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
++}
++
++.forward-picker__row--selected .forward-picker__check {
++	border-color: var(--color-primary-element);
++	background: var(--color-primary-element);
++	color: var(--color-primary-element-text);
++	transform: scale(1.06);
++}
++
++.forward-picker__empty {
++	padding: 32px 0;
++	color: var(--color-text-maxcontrast);
++	text-align: center;
++}
++
++.forward-picker__footer {
++	display: flex;
++	align-items: center;
++	gap: 12px;
++	padding: 12px 16px 16px 20px;
++	border-top: 1px solid var(--color-border);
++}
++
++.forward-picker__summary {
++	flex: 1;
++	min-width: 0;
++	overflow: hidden;
++	color: var(--color-text-maxcontrast);
++	font-size: 13px;
++	text-overflow: ellipsis;
++	white-space: nowrap;
++}
++</style>
+diff --git a/src/components/MessagesList/ForwardSelection/ForwardSelectionBar.vue b/src/components/MessagesList/ForwardSelection/ForwardSelectionBar.vue
+new file mode 100644
+index 0000000..57c1d35
+--- /dev/null
++++ b/src/components/MessagesList/ForwardSelection/ForwardSelectionBar.vue
+@@ -0,0 +1,95 @@
++<!--
++  - SPDX-FileCopyrightText: 2026 Talk Gov.ao
++  - SPDX-License-Identifier: AGPL-3.0-or-later
++-->
++
++<template>
++	<div class="forward-bar" role="toolbar" aria-label="Mensagens selecionadas">
++		<NcButton
++			variant="tertiary"
++			aria-label="Cancelar seleção"
++			title="Cancelar"
++			@click="selection.cancel()">
++			<template #icon>
++				<IconClose :size="20" />
++			</template>
++		</NcButton>
++		<span class="forward-bar__count">
++			{{ selection.ids.length === 1 ? '1 selecionada' : `${selection.ids.length} selecionadas` }}
++		</span>
++		<NcButton
++			variant="primary"
++			:disabled="!selection.ids.length"
++			aria-label="Reencaminhar"
++			title="Reencaminhar"
++			@click="selection.pickerOpen = true">
++			<template #icon>
++				<IconShare :size="20" />
++			</template>
++			Reencaminhar
++		</NcButton>
++
++		<ForwardPicker v-if="selection.pickerOpen" :token="token" @close="selection.pickerOpen = false" />
++	</div>
++</template>
++
++<script setup lang="ts">
++import { onBeforeUnmount, onMounted } from 'vue'
++import NcButton from '@nextcloud/vue/components/NcButton'
++import IconClose from 'vue-material-design-icons/Close.vue'
++import IconShare from 'vue-material-design-icons/ShareOutline.vue'
++import ForwardPicker from './ForwardPicker.vue'
++import { useForwardSelectionStore } from '../../../stores/forwardSelection.ts'
++
++defineProps<{ token: string }>()
++
++const selection = useForwardSelectionStore()
++
++/**
++ * Escape leaves the selection (unless the picker is open: it closes first)
++ *
++ * @param event - Key press
++ */
++function onKeydown(event: KeyboardEvent) {
++	if (event.key === 'Escape' && !selection.pickerOpen) {
++		selection.cancel()
++	}
++}
++
++onMounted(() => document.addEventListener('keydown', onKeydown))
++onBeforeUnmount(() => {
++	document.removeEventListener('keydown', onKeydown)
++	// Leaving the conversation ends the selection
++	selection.cancel()
++})
++</script>
++
++<style scoped>
++.forward-bar {
++	display: flex;
++	align-items: center;
++	gap: 12px;
++	min-height: 64px;
++	margin: 0 auto 12px;
++	padding: 8px 12px;
++	width: min(100% - 32px, 900px);
++	box-sizing: border-box;
++	border-radius: 20px;
++	background: var(--color-main-background);
++	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.1);
++	animation: forward-bar-in 240ms cubic-bezier(0.2, 0.9, 0.3, 1);
++}
++
++.forward-bar__count {
++	flex: 1;
++	font-size: 15px;
++	font-weight: 600;
++}
++
++@keyframes forward-bar-in {
++	from {
++		opacity: 0;
++		transform: translateY(12px);
++	}
++}
++</style>
+diff --git a/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue b/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue
+index b18b8ff..e2c20b6 100644
+--- a/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue
++++ b/src/components/MessagesList/MessagesGroup/Message/MessageButtonsBar/MessageButtonsBar.vue
+@@ -467,6 +467,7 @@ import { getTalkConfig, hasTalkFeature } from '../../../../../services/Capabilit
+ import { getMessageReminder, removeMessageReminder, setMessageReminder } from '../../../../../services/remindersService.js'
+ import { useActorStore } from '../../../../../stores/actor.ts'
+ import { useChatExtrasStore } from '../../../../../stores/chatExtras.ts'
++import { useForwardSelectionStore } from '../../../../../stores/forwardSelection.ts'
+ import { useIntegrationsStore } from '../../../../../stores/integrations.js'
+ import { useReactionsStore } from '../../../../../stores/reactions.js'
+ import { useSharedItemsStore } from '../../../../../stores/sharedItems.ts'
+@@ -943,7 +944,9 @@ export default {
+ 		},
+ 
+ 		openForwarder() {
+-			this.$emit('update:isForwarderOpen', true)
++			// As in WhatsApp: start a selection in the chat, more messages can be ticked
++			useForwardSelectionStore().start(this.message.token, this.message.id)
++			this.$emit('update:isActionMenuOpen', false)
+ 		},
+ 
+ 		// Making sure that the click is outside the MessageButtonsBar
+diff --git a/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue b/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue
+index 9af87ed..7a8b705 100644
+--- a/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue
++++ b/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue
+@@ -16,10 +16,21 @@
+ 			'message--sided': isSplitViewEnabled,
+ 			'message--small-view': (isSmallMobile || isSidebar) && isSplitViewEnabled,
+ 			'message--deleted': isDeletedMessage,
++			'message--selectable': isSelectable,
++			'message--selected': isSelectable && forwardSelection.isSelected(message.id),
+ 		}"
+ 		tabindex="0"
+ 		@mouseover="handleMouseover"
+-		@mouseleave="handleMouseleave">
++		@mouseleave="handleMouseleave"
++		@click.capture="onSelectClick">
++		<span
++			v-if="isSelectable"
++			class="message__select"
++			role="checkbox"
++			:aria-checked="forwardSelection.isSelected(message.id)"
++			aria-label="Selecionar mensagem">
++			<IconCheck :size="14" />
++		</span>
+ 		<div class="message-body">
+ 			<MessageBody
+ 				:richParameters="richParameters"
+@@ -48,7 +59,7 @@
+ 			:class="{
+ 				overlay: isSplitViewEnabled && (!isShortSimpleMessage || (isSmallMobile || isSidebar)) && isReactionsMenuOpen,
+ 			}">
+-			<template v-if="showMessageButtonsBar">
++			<template v-if="showMessageButtonsBar && !isSelectable">
+ 				<ScheduledMessageActions
+ 					v-if="showScheduledMessages"
+ 					v-model:isActionMenuOpen="isActionMenuOpen"
+@@ -96,6 +107,7 @@ import { showError, showSuccess, showWarning, TOAST_DEFAULT_TIMEOUT } from '@nex
+ import { t } from '@nextcloud/l10n'
+ import { useIsSmallMobile } from '@nextcloud/vue/composables/useIsMobile'
+ import { computed, defineAsyncComponent, inject, provide } from 'vue'
++import IconCheck from 'vue-material-design-icons/Check.vue'
+ import IconPin from 'vue-material-design-icons/PinOutline.vue'
+ import MessageButtonsBar from './MessageButtonsBar/MessageButtonsBar.vue'
+ import MessageForwarder from './MessageButtonsBar/MessageForwarder.vue'
+@@ -113,6 +125,7 @@ import { hasTalkFeature } from '../../../../services/CapabilitiesManager.ts'
+ import { EventBus } from '../../../../services/EventBus.ts'
+ import { useActorStore } from '../../../../stores/actor.ts'
+ import { useChatExtrasStore } from '../../../../stores/chatExtras.ts'
++import { useForwardSelectionStore } from '../../../../stores/forwardSelection.ts'
+ import { isFilePreviewParameter, isTemporaryId, isTemporaryMessage } from '../../../../utils/message.ts'
+ 
+ const LocationCard = defineAsyncComponent(() => import('./MessagePart/LocationCard.vue'))
+@@ -126,6 +139,7 @@ export default {
+ 		MessageForwarder,
+ 		ReactionsWrapper,
+ 		ScheduledMessageActions,
++		IconCheck,
+ 		IconPin,
+ 	},
+ 
+@@ -158,6 +172,7 @@ export default {
+ 		provide('message:nextMessageId', computed(() => Number(props.nextMessageId) || 0))
+ 
+ 		return {
++			forwardSelection: useForwardSelectionStore(),
+ 			chatExtrasStore: useChatExtrasStore(),
+ 			actorStore: useActorStore(),
+ 			isSmallMobile: useIsSmallMobile(),
+@@ -182,6 +197,11 @@ export default {
+ 	},
+ 
+ 	computed: {
++		isSelectable() {
++			return this.forwardSelection.token === this.message.token
++				&& !this.isDeletedMessage && !this.isTemporary
++		},
++
+ 		isScheduledMessage() {
+ 			return this.message.referenceId?.startsWith('scheduled-')
+ 		},
+@@ -338,6 +358,16 @@ export default {
+ 	},
+ 
+ 	methods: {
++		onSelectClick(event) {
++			if (!this.isSelectable) {
++				return
++			}
++			// While selecting, a click anywhere on the message ticks it instead of acting on it
++			event.preventDefault()
++			event.stopPropagation()
++			this.forwardSelection.toggle(this.message.id)
++		},
++
+ 		t,
+ 
+ 		handleMouseover() {
+diff --git a/src/stores/forwardSelection.ts b/src/stores/forwardSelection.ts
+new file mode 100644
+index 0000000..9eaa92d
+--- /dev/null
++++ b/src/stores/forwardSelection.ts
+@@ -0,0 +1,47 @@
++/**
++ * SPDX-FileCopyrightText: 2026 Talk Gov.ao
++ * SPDX-License-Identifier: AGPL-3.0-or-later
++ */
++
++import { defineStore } from 'pinia'
++
++/**
++ * Messages picked for forwarding, as in WhatsApp: "Forward" starts a selection in the chat,
++ * more messages can be ticked, then they are sent to one or more conversations.
++ */
++export const useForwardSelectionStore = defineStore('forwardSelection', {
++	state: () => ({
++		/** Conversation the selection belongs to; empty when not selecting */
++		token: '',
++		ids: [] as number[],
++		pickerOpen: false,
++	}),
++
++	actions: {
++		start(token: string, id: number | string) {
++			this.token = token
++			this.ids = [Number(id)]
++			this.pickerOpen = false
++		},
++
++		toggle(id: number | string) {
++			const n = Number(id)
++			const index = this.ids.indexOf(n)
++			if (index === -1) {
++				this.ids.push(n)
++			} else {
++				this.ids.splice(index, 1)
++			}
++		},
++
++		isSelected(id: number | string): boolean {
++			return this.ids.includes(Number(id))
++		},
++
++		cancel() {
++			this.token = ''
++			this.ids = []
++			this.pickerOpen = false
++		},
++	},
++})
