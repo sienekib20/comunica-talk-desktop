@@ -184,7 +184,7 @@ app.whenReady().then(async () => {
 	let mainWindow
 	let createMainWindow
 
-	setupMenu()
+	setupMenu({ showMainWindow: () => focusMainWindow() })
 
 	/**
 	 * Focus the main window. Restore/re-create it if needed.

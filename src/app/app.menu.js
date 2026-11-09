@@ -12,8 +12,11 @@ const { increaseZoom, decreaseZoom, setZoom } = require('./zoom.service.ts')
 
 /**
  * Setup application menu
+ *
+ * @param {object} options - Options
+ * @param {() => void} options.showMainWindow - Bring back the main window, re-creating it once closed
  */
-function setupMenu() {
+function setupMenu({ showMainWindow }) {
 	const macAppMenu = {
 		label: app.name,
 		submenu: [
@@ -70,8 +73,13 @@ function setupMenu() {
 		label: 'View',
 		submenu: [
 			{ role: 'reload' },
-			{ role: 'forceReload' },
-			{ role: 'toggleDevTools' },
+			// Developer tools are for development, not for people who install the app from the store
+			...(process.mas
+				? []
+				: [
+						{ role: 'forceReload' },
+						{ role: 'toggleDevTools' },
+					]),
 			{ type: 'separator' },
 			{ label: 'Reset Zoom', accelerator: 'CommandOrControl+0', click: (event, browserWindow) => setZoom(browserWindow, 1) },
 			{ label: 'Zoom In', accelerator: 'CommandOrControl+=', click: (event, browserWindow) => increaseZoom(browserWindow) },
@@ -84,6 +92,10 @@ function setupMenu() {
 	const windowMenuItemsMac = [
 		{ role: 'minimize' },
 		{ role: 'zoom' },
+		{ type: 'separator' },
+		// Once the main window is closed the app keeps running: this brings it back,
+		// as the Dock icon does (macOS apps are expected to offer both)
+		{ label: app.name, accelerator: 'Command+1', click: () => showMainWindow() },
 		{ type: 'separator' },
 		{ role: 'front' },
 		{ type: 'separator' },
