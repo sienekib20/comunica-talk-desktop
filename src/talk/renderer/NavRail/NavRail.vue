@@ -17,7 +17,7 @@ import IconLogout from 'vue-material-design-icons/Logout.vue'
 import IconMessageTextOutline from 'vue-material-design-icons/MessageTextOutline.vue'
 import IconVideoAccount from 'vue-material-design-icons/VideoAccount.vue'
 import MediaBrowser from '../MediaBrowser/MediaBrowser.vue'
-import RoomsBrowser from '../RoomsBrowser/RoomsBrowser.vue'
+import RoomsPanel from '../RoomsPanel/RoomsPanel.vue'
 import { animate, reducedMotion, SPRING_MOVE } from '../utils/motion.ts'
 
 /*
@@ -26,13 +26,11 @@ import { animate, reducedMotion, SPRING_MOVE } from '../utils/motion.ts'
  * chat.styles.css) and the rail presses them, so Talk keeps doing the actual navigation.
  */
 
-type Section = 'chats' | 'threads' | 'archived' | 'home'
+type Section = 'chats' | 'threads' | 'archived' | 'home' | 'rooms'
 
 const active = ref<Section>('chats')
 /** Media, documents and links of every conversation */
 const mediaOpen = ref(false)
-/** Meeting rooms */
-const roomsOpen = ref(false)
 /** Asking before ending the session */
 const logoutOpen = ref(false)
 const loggingOut = ref(false)
@@ -92,6 +90,8 @@ const actions: Record<Section, () => void> = {
 		requestAnimationFrame(() => pressSidebarButton('archive-outline-icon'))
 	},
 	home: () => pressSidebarButton('home-outline-icon'),
+	// Meeting rooms lie over the conversation list (RoomsPanel): the plain list underneath
+	rooms: () => backToConversations(),
 }
 
 /**
@@ -126,6 +126,8 @@ function sync() {
 	const inSubList = !!navigation.querySelector('.navigation-buttons-container .arrow-left-icon')
 	if (inSubList) {
 		active.value = caption === t('spreed', 'Archived conversations') ? 'archived' : 'threads'
+	} else if (active.value === 'rooms') {
+		// Rooms stay chosen while their conversations open on the right
 	} else if (location.hash === '#/apps/spreed' || location.hash === '#/' || location.hash === '') {
 		active.value = 'home'
 	} else {
@@ -245,10 +247,13 @@ onBeforeUnmount(() => {
 			</button>
 			<button
 				class="nav-rail__item"
+				:class="{ 'nav-rail__item--active': active === 'rooms' }"
+				data-section="rooms"
+				:aria-pressed="active === 'rooms'"
 				aria-label="Salas de reunião"
 				data-tooltip="Salas de reunião"
 				@mousedown.prevent
-				@click="roomsOpen = true">
+				@click="select('rooms')">
 				<IconVideoAccount :size="20" />
 			</button>
 		</div>
@@ -293,7 +298,7 @@ onBeforeUnmount(() => {
 			</button>
 		</div>
 		<MediaBrowser v-if="mediaOpen" @close="mediaOpen = false" />
-		<RoomsBrowser v-if="roomsOpen" @close="roomsOpen = false" />
+		<RoomsPanel v-if="active === 'rooms'" />
 		<NcDialog
 			v-if="logoutOpen"
 			name="Terminar sessão?"

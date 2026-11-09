@@ -418,15 +418,7 @@ body [contenteditable] {
 	background: var(--tg-accent-hover) !important;
 }
 
-/* The call button label stays for screen readers only */
-.top-bar .join-call .button-vue__text {
-	position: absolute !important;
-	width: 1px !important;
-	height: 1px !important;
-	overflow: hidden !important;
-	clip-path: inset(50%) !important;
-	white-space: nowrap !important;
-}
+
 
 /* ================================================================ Chat */
 
@@ -4409,4 +4401,133 @@ body {
 :root body :is(.rooms__tab, .media-browser__tab):focus-visible {
 	outline: none !important;
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--tg-accent) 35%, transparent) !important;
+}
+
+/* Search row: 40px round buttons and a 40px search pill, the same size as the panel toggles */
+:root body .new-conversation {
+	--default-clickable-area: 40px !important;
+	gap: 6px !important;
+}
+
+:root body .new-conversation .conversations-search .input-field__input {
+	height: 40px !important;
+	min-height: 40px !important;
+}
+
+:root body .new-conversation .conversations-search .input-field__main-wrapper {
+	height: 40px !important;
+}
+
+:root body .new-conversation > .action-item .button-vue,
+:root body .new-conversation .action-item__menutoggle {
+	width: 40px !important;
+	min-width: 40px !important;
+	height: 40px !important;
+	min-height: 40px !important;
+}
+
+:root body .new-conversation {
+	align-items: center !important;
+}
+
+:root body .new-conversation > .action-item {
+	align-self: center !important;
+	width: 40px !important;
+	min-width: 40px !important;
+}
+
+:root body .new-conversation > .action-item .button-vue {
+	padding: 0 !important;
+	justify-content: center;
+}
+
+:root body .new-conversation > .action-item .button-vue,
+:root body .new-conversation .action-item__menutoggle {
+	--button-size: 40px !important;
+}
+
+:root body .new-conversation > .action-item {
+	margin-block: auto !important;
+}
+
+/* The search row is exactly as tall as its controls (40px), its centre on the top row's (32px) */
+:root body #content-vue > .app-navigation .new-conversation {
+	height: 40px !important;
+	min-height: 40px !important;
+	margin-block-start: 4px !important;
+}
+
+/* ================================================================ Call button */
+/* In a conversation the call button is the first thing to see: a labelled pill ("Iniciar
+   chamada") in the accent colour; when a call is going on it turns green ("Entrar na chamada")
+   with a ring pulsing around it. */
+
+:root body .top-bar .join-call.button-vue {
+	--button-size: 40px;
+	width: auto !important;
+	min-width: 0 !important;
+	height: 40px !important;
+	min-height: 40px !important;
+	padding: 0 18px 0 14px !important;
+	border: none !important;
+	border-radius: 20px !important;
+	background: var(--tg-accent) !important;
+	color: #ffffff !important;
+	box-shadow: 0 6px 16px color-mix(in srgb, var(--tg-accent) 35%, transparent) !important;
+	transition: background-color 140ms ease, transform 140ms cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 140ms ease !important;
+}
+
+:root body .top-bar .join-call.button-vue:hover:not(:disabled) {
+	background: var(--tg-accent-hover, var(--tg-accent)) !important;
+	transform: translateY(-1px);
+}
+
+:root body .top-bar .join-call .button-vue__wrapper {
+	gap: 8px;
+	padding: 0 !important;
+}
+
+:root body .top-bar .join-call .button-vue__text {
+	position: static !important;
+	width: auto !important;
+	height: auto !important;
+	overflow: visible !important;
+	clip-path: none !important;
+	color: inherit !important;
+	font-size: 14px !important;
+	font-weight: 650 !important;
+	white-space: nowrap !important;
+}
+
+/* A call is going on: green, pulsing */
+:root body .top-bar .join-call.button-vue--success,
+:root body .top-bar .join-call.button-vue--vue-success {
+	background: #1fa463 !important;
+	animation: tg-call-pulse 1.8s ease-out infinite;
+}
+
+:root body .top-bar .join-call.button-vue--success:hover,
+:root body .top-bar .join-call.button-vue--vue-success:hover {
+	background: #198f55 !important;
+}
+
+@keyframes tg-call-pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(31, 164, 99, 0.55), 0 6px 16px rgba(31, 164, 99, 0.35);
+	}
+
+	70% {
+		box-shadow: 0 0 0 10px rgba(31, 164, 99, 0), 0 6px 16px rgba(31, 164, 99, 0.35);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 rgba(31, 164, 99, 0), 0 6px 16px rgba(31, 164, 99, 0.35);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root body .top-bar .join-call.button-vue--success,
+	:root body .top-bar .join-call.button-vue--vue-success {
+		animation: none;
+	}
 }
