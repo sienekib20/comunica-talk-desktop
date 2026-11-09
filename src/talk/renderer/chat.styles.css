@@ -3285,3 +3285,44 @@ body {
 		transform: none;
 	}
 }
+
+/* ================================================================ Long messages: "Ler mais" */
+/* Every message text is limited to about 16 lines from the first paint; a longer one fades out
+   at the bottom and gets "Ler mais" (utils/readMore.ts), which opens it in place. */
+
+:root body .messages-list__scroller .message-main__text > .rich-text--wrapper {
+	max-height: 24em;
+	overflow: hidden;
+}
+
+:root body .messages-list__scroller .message-main__text > .rich-text--wrapper.tg-text--open {
+	max-height: none;
+}
+
+:root body .messages-list__scroller .message-main__text > .rich-text--wrapper.tg-text--folded {
+	mask-image: linear-gradient(to bottom, #000 calc(100% - 3em), transparent);
+}
+
+:root body .tg-read-more {
+	display: inline-block;
+	min-height: 0 !important;
+	margin: 4px 0 0 !important;
+	padding: 2px 0 !important;
+	border: none !important;
+	background: transparent !important;
+	color: var(--tg-accent) !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	cursor: pointer;
+}
+
+:root body .message.outgoing .tg-read-more {
+	color: inherit !important;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	opacity: 0.95;
+}
+
+:root body .tg-read-more:hover {
+	text-decoration: underline;
+}

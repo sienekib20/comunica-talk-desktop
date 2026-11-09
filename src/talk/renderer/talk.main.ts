@@ -10,6 +10,7 @@ import { applyCleanDisplayNames } from './utils/cleanDisplayNames.ts'
 import { applyComposerMarkdown } from './utils/composerMarkdown.ts'
 import { applyDatePickers } from './utils/datePickers.ts'
 import { applyMotion } from './utils/motion.ts'
+import { applyReadMore } from './utils/readMore.ts'
 
 import '../../shared/assets/styles.css'
 import '@talk/src/icons.css'
@@ -33,6 +34,8 @@ applyDatePickers()
 applyMotion()
 
 applyComposerMarkdown()
+
+applyReadMore()
 
 // HOTFIX: prevent invalid links <a href="#"> used in NcListItem as a button from breaking routing in Vue Router 4 with Hash History
 // TODO: fix on NcListItem side and use real buttons instead of <a href="#">
