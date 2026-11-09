@@ -3326,3 +3326,19 @@ body {
 :root body .tg-read-more:hover {
 	text-decoration: underline;
 }
+
+/* ================================================================ Chat wallpaper */
+/* An original line-drawing pattern (chat bubbles, calendar, clip, phone, documents…), very faint,
+   behind the messages. It stays still while the messages scroll over it. */
+
+:root body .chatView {
+	background-image: url('./assets/chat-wallpaper-light.svg') !important;
+	background-size: 320px 320px !important;
+	background-repeat: repeat !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root body .chatView {
+		background-image: url('./assets/chat-wallpaper-dark.svg') !important;
+	}
+}
