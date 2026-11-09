@@ -4372,3 +4372,41 @@ body {
 	height: auto !important;
 	min-height: 0 !important;
 }
+
+/* Home: sections one after the other, 16px apart, not spread over the page */
+:root body .talk-dashboard__items {
+	justify-content: flex-start !important;
+	align-content: flex-start !important;
+	height: auto !important;
+	flex: none !important;
+}
+
+/* Conversation rows: taller, with room above and below (the virtual list is told the same
+   height in patch 0006) */
+:root body li.conversation .list-item--compact,
+:root body li.conversation .list-item {
+	min-height: 38px !important;
+	height: 38px;
+}
+
+/* Conversation rows: avatar, name and the "…" button on one centre line */
+:root body li.conversation .list-item {
+	align-items: center !important;
+}
+
+:root body li.conversation .list-item__anchor {
+	align-items: center !important;
+	align-self: center !important;
+}
+
+:root body li.conversation .list-item .action-item,
+:root body li.conversation .list-item [class*='actions'] {
+	align-self: center !important;
+	margin-block: 0 !important;
+}
+
+/* Tabs of our own windows get the focus when the window opens: a soft ring, not a frame */
+:root body :is(.rooms__tab, .media-browser__tab):focus-visible {
+	outline: none !important;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--tg-accent) 35%, transparent) !important;
+}

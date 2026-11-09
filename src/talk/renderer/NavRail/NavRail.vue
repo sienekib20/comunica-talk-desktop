@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import { t } from '@nextcloud/l10n'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import IconArchiveOutline from 'vue-material-design-icons/ArchiveOutline.vue'
@@ -15,11 +15,9 @@ import IconHomeOutline from 'vue-material-design-icons/HomeOutline.vue'
 import IconImageMultipleOutline from 'vue-material-design-icons/ImageMultipleOutline.vue'
 import IconLogout from 'vue-material-design-icons/Logout.vue'
 import IconMessageTextOutline from 'vue-material-design-icons/MessageTextOutline.vue'
-import IconThemeLightDark from 'vue-material-design-icons/ThemeLightDark.vue'
-import IconWeatherNight from 'vue-material-design-icons/WeatherNight.vue'
-import IconWeatherSunny from 'vue-material-design-icons/WeatherSunny.vue'
+import IconVideoAccount from 'vue-material-design-icons/VideoAccount.vue'
 import MediaBrowser from '../MediaBrowser/MediaBrowser.vue'
-import { useAppConfigStore } from '../Settings/appConfig.store.ts'
+import RoomsBrowser from '../RoomsBrowser/RoomsBrowser.vue'
 import { animate, reducedMotion, SPRING_MOVE } from '../utils/motion.ts'
 
 /*
@@ -30,29 +28,11 @@ import { animate, reducedMotion, SPRING_MOVE } from '../utils/motion.ts'
 
 type Section = 'chats' | 'threads' | 'archived' | 'home'
 
-const appConfigStore = useAppConfigStore()
-
-/** System, light and dark in turn, the same setting as in the app settings */
-const THEMES = ['default', 'light', 'dark'] as const
-const theme = computed(() => appConfigStore.getAppConfigValue('theme'))
-const themeLabel = computed(() => ({
-	// This app ships no translations of its own, and it is used in Portuguese only
-	default: 'Tema: igual ao sistema',
-	light: 'Tema: claro',
-	dark: 'Tema: escuro',
-})[theme.value])
-
-/**
- * Switch to the next theme
- */
-function cycleTheme() {
-	const next = THEMES[(THEMES.indexOf(theme.value) + 1) % THEMES.length]!
-	appConfigStore.setAppConfigValue('theme', next)
-}
-
 const active = ref<Section>('chats')
 /** Media, documents and links of every conversation */
 const mediaOpen = ref(false)
+/** Meeting rooms */
+const roomsOpen = ref(false)
 /** Asking before ending the session */
 const logoutOpen = ref(false)
 const loggingOut = ref(false)
@@ -263,6 +243,14 @@ onBeforeUnmount(() => {
 				@click="select('home')">
 				<IconHomeOutline :size="20" />
 			</button>
+			<button
+				class="nav-rail__item"
+				aria-label="Salas de reunião"
+				data-tooltip="Salas de reunião"
+				@mousedown.prevent
+				@click="roomsOpen = true">
+				<IconVideoAccount :size="20" />
+			</button>
 		</div>
 
 		<div class="nav-rail__group">
@@ -288,22 +276,13 @@ onBeforeUnmount(() => {
 			</button>
 			<button
 				class="nav-rail__item"
-				:aria-label="themeLabel"
-				:data-tooltip="themeLabel"
-				@mousedown.prevent
-				@click="cycleTheme">
-				<IconWeatherSunny v-if="theme === 'light'" :size="20" />
-				<IconWeatherNight v-else-if="theme === 'dark'" :size="20" />
-				<IconThemeLightDark v-else :size="20" />
-			</button>
-			<button
-				class="nav-rail__item"
 				:aria-label="t('spreed', 'App settings')"
 				:data-tooltip="t('spreed', 'App settings')"
 				@mousedown.prevent
 				@click="openSettings">
 				<IconCogOutline :size="20" />
 			</button>
+			<span class="nav-rail__separator" aria-hidden="true" />
 			<button
 				class="nav-rail__item nav-rail__item--logout"
 				aria-label="Terminar sessão"
@@ -314,6 +293,7 @@ onBeforeUnmount(() => {
 			</button>
 		</div>
 		<MediaBrowser v-if="mediaOpen" @close="mediaOpen = false" />
+		<RoomsBrowser v-if="roomsOpen" @close="roomsOpen = false" />
 		<NcDialog
 			v-if="logoutOpen"
 			name="Terminar sessão?"
@@ -485,5 +465,21 @@ onBeforeUnmount(() => {
 
 .nav-rail__item--logout:hover {
 	background: color-mix(in srgb, var(--tg-danger, #e5484d) 12%, var(--tg-card));
+}
+</style>
+
+<style scoped>
+.nav-rail__separator {
+	align-self: center;
+	width: 28px;
+	height: 1px;
+	margin-block: 2px;
+	background: rgba(16, 24, 40, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+	.nav-rail__separator {
+		background: rgba(255, 255, 255, 0.12);
+	}
 }
 </style>

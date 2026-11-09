@@ -1,0 +1,14 @@
+diff --git a/src/components/LeftSidebar/ConversationsList/ConversationsListVirtual.vue b/src/components/LeftSidebar/ConversationsList/ConversationsListVirtual.vue
+index 22bc0a2..ece4d22 100644
+--- a/src/components/LeftSidebar/ConversationsList/ConversationsListVirtual.vue
++++ b/src/components/LeftSidebar/ConversationsList/ConversationsListVirtual.vue
+@@ -158,7 +158,8 @@ const listItems = computed<VirtualListItem[]>(() => {
+  * list-item padding
+  * list-item__wrapper padding
+  */
+-const itemHeight = computed(() => props.compact ? 28 + 2 * 2 : AVATAR.SIZE.DEFAULT + 2 * 4 + 2 * 2)
++// Compact rows are 40px tall (Talk Gov.ao: more room around each conversation) + 2px margins
++const itemHeight = computed(() => props.compact ? 40 + 2 * 2 : AVATAR.SIZE.DEFAULT + 2 * 4 + 2 * 2)
+ const headerItemHeight = 34
+ 
+ /**
