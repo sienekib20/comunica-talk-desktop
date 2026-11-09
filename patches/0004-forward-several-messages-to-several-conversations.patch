@@ -574,7 +574,7 @@ index b18b8ff..e2c20b6 100644
  
  		// Making sure that the click is outside the MessageButtonsBar
 diff --git a/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue b/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue
-index 9af87ed..7a8b705 100644
+index 9af87ed..2c02778 100644
 --- a/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue
 +++ b/src/components/MessagesList/MessagesGroup/Message/MessageItem.vue
 @@ -16,10 +16,21 @@
@@ -646,7 +646,7 @@ index 9af87ed..7a8b705 100644
  
  	computed: {
 +		isSelectable() {
-+			return this.forwardSelection.token === this.message.token
++			return !!this.forwardSelection.token && this.forwardSelection.token === this.message.token
 +				&& !this.isDeletedMessage && !this.isTemporary
 +		},
 +

@@ -3597,3 +3597,765 @@ body {
 :root body .emoji-mart .search__wrapper .input-field__input:focus {
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--tg-accent) 40%, transparent) !important;
 }
+
+/* ================================================================ Settings, in the manner of WhatsApp */
+/* Left: title, a search, the user's card, the sections as rows (icon, title, one line saying
+   what is inside). Right: only the chosen section. See utils/settingsDialog.ts */
+
+:root body .tg-settings .app-settings__navigation {
+	width: 340px !important;
+	min-width: 340px !important;
+	padding: 20px 12px 16px !important;
+	border-inline-end: 1px solid var(--tg-line) !important;
+	background: var(--tg-card) !important;
+}
+
+:root body .tg-settings .app-settings__title {
+	margin: 0 0 14px !important;
+	padding: 0 8px !important;
+	font-size: 24px !important;
+	font-weight: 750 !important;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+}
+
+:root body .tg-settings__search {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 40px;
+	margin: 0 4px 14px;
+	padding: 0 14px;
+	border-radius: 20px;
+	background: var(--tg-soft);
+	color: var(--tg-text-soft);
+}
+
+:root body .tg-settings__search svg {
+	flex: none;
+	width: 18px;
+	height: 18px;
+}
+
+:root body .tg-settings__search input {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border: none !important;
+	outline: none;
+	box-shadow: none !important;
+	background: transparent !important;
+	color: var(--tg-text);
+	font-size: 14px;
+}
+
+:root body .tg-settings__profile {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 0 0 10px;
+	padding: 10px 12px 16px;
+	border-bottom: 1px solid var(--tg-line);
+}
+
+:root body .tg-settings__profile img {
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+:root body .tg-settings__profile div {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+:root body .tg-settings__profile strong {
+	overflow: hidden;
+	font-size: 16px;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+:root body .tg-settings__profile span {
+	overflow: hidden;
+	color: var(--tg-text-soft);
+	font-size: 13px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Section rows */
+:root body .tg-settings .navigation-list {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+:root body .tg-settings .navigation-list__link {
+	display: grid !important;
+	grid-template-columns: 24px 1fr;
+	grid-template-rows: auto auto;
+	column-gap: 16px;
+	align-items: center;
+	height: auto !important;
+	min-height: 60px;
+	padding: 10px 12px !important;
+	border-radius: 12px !important;
+	background: transparent !important;
+	color: var(--tg-text) !important;
+	transition: background-color 120ms ease;
+}
+
+:root body .tg-settings .navigation-list__link::before,
+:root body .tg-settings .navigation-list__link--active::before {
+	display: none !important;
+}
+
+:root body .tg-settings .navigation-list__link:hover {
+	background: var(--tg-soft) !important;
+}
+
+:root body .tg-settings .navigation-list__link[data-tg-chosen] {
+	background: color-mix(in srgb, var(--tg-accent) 10%, transparent) !important;
+}
+
+:root body .tg-settings__icon {
+	grid-row: 1 / span 2;
+	width: 22px;
+	height: 22px;
+	color: var(--tg-text-mid);
+}
+
+:root body [data-tg-chosen] .tg-settings__icon {
+	color: var(--tg-accent);
+}
+
+:root body .tg-settings .navigation-list__link-text {
+	padding: 0 !important;
+	font-size: 15px !important;
+	font-weight: 550 !important;
+	line-height: 1.3;
+}
+
+:root body .tg-settings__description {
+	grid-column: 2;
+	overflow: hidden;
+	color: var(--tg-text-soft);
+	font-size: 13px;
+	line-height: 1.3;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Right: one section at a time */
+:root body .tg-settings .app-settings-section:not([data-tg-shown]) {
+	display: none !important;
+}
+
+:root body .tg-settings .app-settings-section[data-tg-shown] {
+	animation: tg-fade-up 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+:root body .tg-settings .app-settings__content {
+	padding: 24px 32px 32px !important;
+}
+
+:root body .tg-settings .modal-container {
+	width: min(1080px, calc(100vw - 48px)) !important;
+	max-width: none !important;
+	height: min(780px, calc(100vh - 48px)) !important;
+}
+
+/* ================================================================ Switches */
+/* Drawn in CSS instead of Nextcloud's small toggle icon: a 40×24 track, a white knob with a
+   soft shadow that slides with a little spring, the accent colour when on. */
+
+:root {
+	--tg-switch-off: #c5cbd3;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--tg-switch-off: #3b4a54;
+	}
+}
+
+:root body .checkbox-content-switch .checkbox-content__icon {
+	position: relative;
+	flex: none;
+	box-sizing: border-box;
+	width: 40px !important;
+	min-width: 40px !important;
+	height: 24px !important;
+	margin-block: 0 !important;
+	border-radius: 12px;
+	background: var(--tg-switch-off);
+	transition: background-color 180ms ease, box-shadow 140ms ease;
+}
+
+:root body .checkbox-content-switch .checkbox-content__icon > * {
+	opacity: 0 !important;
+}
+
+:root body .checkbox-content-switch .checkbox-content__icon::after {
+	content: '';
+	position: absolute;
+	top: 2px;
+	inset-inline-start: 2px;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: #ffffff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.08);
+	transition: transform 240ms cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+
+:root body .checkbox-content-switch .checkbox-content__icon--checked {
+	background: var(--tg-accent);
+}
+
+:root body .checkbox-content-switch .checkbox-content__icon--checked::after {
+	transform: translateX(16px);
+}
+
+:root body .checkbox-radio-switch--disabled .checkbox-content-switch .checkbox-content__icon {
+	opacity: 0.45;
+}
+
+:root body .checkbox-radio-switch__input:focus-visible + .checkbox-content-switch .checkbox-content__icon,
+:root body .checkbox-radio-switch__input:focus-visible ~ .checkbox-content .checkbox-content__icon {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--tg-accent) 30%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root body .checkbox-content-switch .checkbox-content__icon::after {
+		transition: none;
+	}
+}
+
+/* ================================================================ Home, a worthy background */
+/* The home page sits on a soft grey with two faint coloured glows at the top and the chat's
+   line pattern, so its white tiles and cards stand out; each section title gets its icon. */
+
+:root body .talk-dashboard-wrapper {
+	background:
+		radial-gradient(900px 420px at 12% -8%, color-mix(in srgb, var(--tg-accent) 16%, transparent), transparent 62%),
+		radial-gradient(760px 380px at 96% 0%, rgba(124, 58, 237, 0.08), transparent 60%),
+		url('./assets/chat-wallpaper-light.svg') repeat top left / 320px 320px,
+		var(--tg-chat-surface) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root body .talk-dashboard-wrapper {
+		background:
+			radial-gradient(900px 420px at 12% -8%, color-mix(in srgb, var(--tg-accent) 18%, transparent), transparent 62%),
+			radial-gradient(760px 380px at 96% 0%, rgba(124, 58, 237, 0.12), transparent 60%),
+			url('./assets/chat-wallpaper-dark.svg') repeat top left / 320px 320px,
+			var(--tg-chat-surface) !important;
+	}
+}
+
+:root body .talk-dashboard-wrapper .dashboard-section {
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 10px 30px rgba(16, 24, 40, 0.06) !important;
+}
+
+:root body .talk-dashboard-wrapper .dashboard-section__title {
+	display: flex !important;
+	align-items: center;
+	gap: 10px;
+}
+
+:root body .talk-dashboard-wrapper .dashboard-section__title::before {
+	content: '';
+	flex: none;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--tg-section-tint, var(--tg-accent)) var(--tg-section-icon) center / 18px no-repeat;
+	background-color: color-mix(in srgb, var(--tg-section-tint, var(--tg-accent)) 14%, transparent);
+	-webkit-mask: none;
+}
+
+:root body .talk-dashboard-wrapper .event-section {
+	--tg-section-tint: #2f74d0;
+	--tg-section-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232f74d0' d='M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V9h14z'/%3E%3C/svg%3E");
+}
+
+:root body .talk-dashboard-wrapper .talk-dashboard__unread-mentions {
+	--tg-section-tint: #e8930c;
+	--tg-section-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e8930c' d='M12 2a10 10 0 1 0 5 18.66V18.3A8 8 0 1 1 20 12v1.5a1.5 1.5 0 0 1-3 0V12a5 5 0 1 0-1.46 3.53A3.5 3.5 0 0 0 22 13.5V12A10 10 0 0 0 12 2zm0 13a3 3 0 1 1 0-6 3 3 0 0 1 0 6z'/%3E%3C/svg%3E");
+}
+
+:root body .talk-dashboard-wrapper .talk-dashboard__upcoming-reminders {
+	--tg-section-tint: #7c3aed;
+	--tg-section-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%237c3aed' d='M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 0 0-5-5.91V4a1 1 0 0 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1z'/%3E%3C/svg%3E");
+}
+
+/* ================================================================ Select menus */
+/* The app's own menu for every <select> (utils/selectMenu.ts): the menu card of the popovers,
+   rows with a tick on the chosen one, the accent tint on the highlighted one. */
+
+:root body .tg-select-menu {
+	position: fixed;
+	z-index: 100000;
+	box-sizing: border-box;
+	overflow-y: auto;
+	padding: 6px;
+	border: 1px solid var(--tg-line);
+	border-radius: 14px;
+	background: var(--tg-card);
+	box-shadow: 0 2px 6px rgba(16, 24, 40, 0.06), 0 18px 44px rgba(16, 24, 40, 0.16);
+	animation: tg-select-in 160ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+:root body .tg-select-menu--closing {
+	animation: tg-select-out 120ms ease forwards;
+}
+
+@keyframes tg-select-in {
+	from {
+		opacity: 0;
+		transform: scale(0.96) translateY(-4px);
+	}
+}
+
+@keyframes tg-select-out {
+	to {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+}
+
+:root body .tg-select-menu ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+:root body .tg-select-menu__option {
+	position: relative;
+	padding: 9px 12px 9px 36px;
+	border-radius: 9px;
+	color: var(--tg-text);
+	font-size: 14px;
+	line-height: 1.3;
+	cursor: pointer;
+}
+
+:root body .tg-select-menu__option--active {
+	background: var(--tg-soft);
+}
+
+:root body .tg-select-menu__option--selected {
+	color: var(--tg-accent);
+	font-weight: 600;
+}
+
+:root body .tg-select-menu__option--selected::before {
+	content: '';
+	position: absolute;
+	inset-inline-start: 12px;
+	top: 50%;
+	width: 16px;
+	height: 16px;
+	transform: translateY(-50%);
+	background: var(--tg-accent);
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+:root body .tg-select-menu__option--disabled {
+	opacity: 0.45;
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root body .tg-select-menu,
+	:root body .tg-select-menu--closing {
+		animation: none;
+	}
+}
+
+/* ================================================================ Settings, details */
+
+/* Switches of the settings boxes: the same CSS switch as everywhere */
+:root body [class*='_iconToggleSwitch_'] {
+	position: relative;
+	box-sizing: border-box;
+	width: 40px !important;
+	min-width: 40px !important;
+	height: 24px !important;
+	border-radius: 12px;
+	background: var(--tg-switch-off);
+	transition: background-color 180ms ease, box-shadow 140ms ease;
+}
+
+:root body [class*='_iconToggleSwitch_'] > * {
+	opacity: 0 !important;
+}
+
+:root body [class*='_iconToggleSwitch_']::after {
+	content: '';
+	position: absolute;
+	top: 2px;
+	inset-inline-start: 2px;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: #ffffff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.08);
+	transition: transform 240ms cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+
+:root body input[role='switch']:checked + [class*='_iconToggleSwitch_'] {
+	background: var(--tg-accent);
+}
+
+:root body input[role='switch']:checked + [class*='_iconToggleSwitch_']::after {
+	transform: translateX(16px);
+}
+
+:root body input[role='switch']:focus-visible + [class*='_iconToggleSwitch_'] {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--tg-accent) 30%, transparent);
+}
+
+:root body input[role='switch']:disabled + [class*='_iconToggleSwitch_'] {
+	opacity: 0.45;
+}
+
+/* Segmented choices ("Lista de mensagens" / "Balões de mensagem"): a soft track, the chosen one
+   a white raised pill */
+:root body :has(> .checkbox-radio-switch--button-variant-h-grouped) {
+	display: flex !important;
+	gap: 4px;
+	padding: 4px !important;
+	border: none !important;
+	border-radius: 12px;
+	background: var(--tg-soft) !important;
+}
+
+:root body .checkbox-radio-switch--button-variant-h-grouped {
+	flex: 1;
+	margin: 0 !important;
+	border: none !important;
+	border-radius: 9px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+:root body .checkbox-radio-switch--button-variant-h-grouped .checkbox-content {
+	min-height: 36px;
+	padding: 6px 14px !important;
+	border-radius: 9px !important;
+	background: transparent !important;
+	color: var(--tg-text-mid) !important;
+	font-weight: 500 !important;
+	transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+:root body .checkbox-radio-switch--button-variant-h-grouped.checkbox-radio-switch--checked .checkbox-content {
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+	font-weight: 600 !important;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+}
+
+/* A settings item standing on its own (the attachments folder): the same white card */
+:root body .tg-settings .app-settings-section__content > [class*='_formBoxItem_'] {
+	padding: 6px 4px !important;
+	border: none !important;
+	border-radius: 16px !important;
+	background: var(--tg-card) !important;
+	box-shadow: none !important;
+}
+
+/* Keyboard shortcuts: one card, a row each, keys as raised keycaps */
+:root body [class*='_hotkeyList_'] ul {
+	margin: 0 0 12px !important;
+	padding: 4px 16px !important;
+	border-radius: 16px;
+	background: var(--tg-card);
+	list-style: none;
+}
+
+:root body li[class*='_hotkey_'] {
+	display: flex !important;
+	flex-direction: row-reverse;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	min-height: 48px;
+	padding: 6px 0 !important;
+	border-bottom: 1px solid var(--tg-line);
+}
+
+:root body li[class*='_hotkey_']:last-child {
+	border-bottom: none;
+}
+
+:root body [class*='_kbd_'] {
+	display: inline-grid;
+	place-items: center;
+	min-width: 28px;
+	height: 28px;
+	box-sizing: border-box;
+	margin-inline-start: 4px;
+	padding: 0 8px;
+	border: 1px solid var(--tg-line);
+	border-bottom-width: 2px;
+	border-radius: 7px;
+	background: var(--tg-card);
+	box-shadow: 0 1px 1px rgba(16, 24, 40, 0.06);
+	color: var(--tg-text);
+	font-family: var(--tg-font);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+/* App version at the bottom of the settings */
+:root body .tg-settings .app-settings__content > :last-child:not(.app-settings-section) {
+	color: var(--tg-text-soft);
+	font-size: 12px;
+}
+
+/* ================================================================ Tabs made of buttons */
+/* Button tab lists (the devices dialog's "Dispositivos" / "Planos de fundo"…): a soft track,
+   the selected tab a white raised pill, no frame */
+
+:root body [role='tablist']:has(> .button-vue[role='tab']) {
+	display: inline-flex !important;
+	gap: 4px;
+	padding: 4px !important;
+	border-radius: 12px;
+	background: var(--tg-soft);
+}
+
+:root body [role='tablist'] > .button-vue[role='tab'] {
+	min-height: 36px !important;
+	border: none !important;
+	border-radius: 9px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: var(--tg-text-mid) !important;
+	font-weight: 500 !important;
+	transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+:root body [role='tablist'] > .button-vue[role='tab'][aria-selected='true'] {
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+	font-weight: 600 !important;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12) !important;
+}
+
+:root body [role='tablist'] > .button-vue[role='tab']:focus-visible {
+	outline: 2px solid var(--tg-accent) !important;
+	outline-offset: 1px;
+}
+
+/* ================================================================ Devices dialog */
+
+/* Device pickers: plain white fields with a hairline edge, the device name in the text colour */
+:root body .media-devices-selector .vs__dropdown-toggle,
+:root body .media-devices-selector .select .vs__dropdown-toggle {
+	min-height: 44px !important;
+	border: 1px solid var(--tg-line) !important;
+	border-radius: 12px !important;
+	background: var(--tg-card) !important;
+	box-shadow: none !important;
+}
+
+:root body .media-devices-selector .vs__dropdown-toggle:hover {
+	border-color: var(--tg-field-border-hover, #c3c9d0) !important;
+}
+
+:root body .media-devices-selector .vs--open .vs__dropdown-toggle {
+	border-color: var(--tg-accent) !important;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--tg-accent) 16%, transparent) !important;
+}
+
+:root body .media-devices-selector .vs__selected,
+:root body .media-devices-selector .vs__search {
+	color: var(--tg-text) !important;
+	font-weight: 500 !important;
+}
+
+:root body .media-devices-selector__icon {
+	color: var(--tg-text-mid);
+}
+
+/* Preview: rounder, its microphone and camera toggles a floating pill over the bottom edge */
+:root body .media-settings__preview {
+	border-radius: 18px !important;
+	overflow: hidden;
+}
+
+:root body .media-settings__toggles {
+	gap: 6px;
+	padding: 6px !important;
+	border-radius: 28px !important;
+	background: color-mix(in srgb, var(--tg-card) 92%, transparent) !important;
+	backdrop-filter: blur(10px);
+	box-shadow: 0 8px 24px rgba(16, 24, 40, 0.18) !important;
+}
+
+:root body .media-settings__toggles .button-vue {
+	border-radius: 50% !important;
+}
+
+/* Left panel toggle: close to the content's left edge, the conversation header just after it */
+:root body #content-vue > .app-navigation .app-navigation-toggle-wrapper {
+	inset-inline-end: -12px !important;
+	right: auto;
+	margin-inline-end: 0 !important;
+	transform: translateX(100%);
+}
+
+:root body .main-view .top-bar {
+	padding-inline-start: 64px !important;
+}
+
+/* Panel toggles: true circles (40×40), so the focus ring is round too */
+:root body .app-navigation-toggle-wrapper .button-vue,
+:root body #content-vue > .button-vue {
+	width: 40px !important;
+	min-width: 40px !important;
+	height: 40px !important;
+	min-height: 40px !important;
+	aspect-ratio: 1;
+	padding: 0 !important;
+	border-radius: 50% !important;
+}
+
+:root body .app-navigation-toggle-wrapper .button-vue:focus-visible,
+:root body #content-vue > .button-vue:focus-visible {
+	outline-offset: 2px;
+}
+
+:root body li[class*='_hotkey_'] > [role='definition'] {
+	text-align: start;
+	color: var(--tg-text);
+}
+
+:root body [class*='_hotkey__keys_'] {
+	display: inline-flex;
+	gap: 4px;
+}
+
+/* Segmented choices made of pressed buttons in a row box (chat style, theme, noise
+   suppression): a soft track, the chosen one a white raised pill, the others quiet */
+:root body [class*='_ncFormBox_row_']:has(> .button-vue[aria-pressed]),
+:root body [class*='_ncFormBox_row_']:has(> * > .button-vue[aria-pressed]) {
+	gap: 4px !important;
+	padding: 4px !important;
+	border: none !important;
+	border-radius: 12px !important;
+	background: var(--tg-soft) !important;
+	box-shadow: none !important;
+}
+
+:root body [class*='_ncFormBox_row_'] .button-vue[aria-pressed] {
+	min-height: 38px !important;
+	border: none !important;
+	border-radius: 9px !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: var(--tg-text-mid) !important;
+	font-weight: 500 !important;
+	transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+:root body [class*='_ncFormBox_row_'] .button-vue[aria-pressed]::before,
+:root body [class*='_ncFormBox_row_'] .button-vue[aria-pressed]::after {
+	display: none !important;
+}
+
+:root body [class*='_ncFormBox_row_'] .button-vue[aria-pressed]:hover {
+	color: var(--tg-text) !important;
+}
+
+:root body [class*='_ncFormBox_row_'] .button-vue[aria-pressed='true'] {
+	background: var(--tg-card) !important;
+	color: var(--tg-text) !important;
+	font-weight: 600 !important;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12) !important;
+}
+
+:root body li[class*='_hotkey_'] > * {
+	border: none !important;
+	box-shadow: none !important;
+}
+
+/* Home: the cards of a row share one height */
+:root body .talk-dashboard__chats {
+	align-items: stretch !important;
+}
+
+:root body .talk-dashboard__chats > * {
+	display: flex !important;
+	flex-direction: column;
+}
+
+:root body .talk-dashboard__chats > * > .dashboard-section {
+	flex: 1;
+}
+
+/* Settings: the chosen section is plainly the current one */
+:root body .tg-settings .navigation-list__link[data-tg-chosen] {
+	position: relative;
+	background: color-mix(in srgb, var(--tg-accent) 12%, transparent) !important;
+}
+
+:root body .tg-settings .navigation-list__link[data-tg-chosen]::after {
+	content: '';
+	position: absolute;
+	inset-block: 12px;
+	inset-inline-start: 0;
+	width: 3px;
+	border-radius: 0 3px 3px 0;
+	background: var(--tg-accent);
+}
+
+:root body .tg-settings [data-tg-chosen] .navigation-list__link-text {
+	color: var(--tg-accent) !important;
+	font-weight: 650 !important;
+}
+
+/* Nextcloud's own scroll-spy highlight would mark another row: ours is the one */
+:root body .tg-settings .navigation-list__link--active:not([data-tg-chosen]) {
+	background: transparent !important;
+}
+
+:root body .tg-settings .navigation-list__link--active:not([data-tg-chosen]):hover {
+	background: var(--tg-soft) !important;
+}
+
+/* Keyboard shortcuts: a single hairline between rows */
+:root body li[class*='_hotkey_']::before,
+:root body li[class*='_hotkey_']::after,
+:root body li[class*='_hotkey_'] > *::before,
+:root body li[class*='_hotkey_'] > *::after {
+	display: none !important;
+}
+
+/* Conversation rows: more room at both ends, around the avatar and the "…" button. The height
+   stays Talk's: its virtual list places every row at a fixed height */
+:root body li.conversation .list-item {
+	padding-inline: 16px 10px !important;
+	border-radius: 14px !important;
+}
+
+:root body li.conversation .list-item .list-item__anchor {
+	gap: 12px;
+	align-items: center;
+}
+
+:root body li.conversation .list-item .list-item-content__actions,
+:root body li.conversation .list-item .list-item__extra-actions {
+	margin-inline-start: 6px;
+}

@@ -6,11 +6,14 @@
 <script setup lang="ts">
 import { t } from '@nextcloud/l10n'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
 import IconArchiveOutline from 'vue-material-design-icons/ArchiveOutline.vue'
 import IconCogOutline from 'vue-material-design-icons/CogOutline.vue'
 import IconForumOutline from 'vue-material-design-icons/ForumOutline.vue'
 import IconHomeOutline from 'vue-material-design-icons/HomeOutline.vue'
 import IconImageMultipleOutline from 'vue-material-design-icons/ImageMultipleOutline.vue'
+import IconLogout from 'vue-material-design-icons/Logout.vue'
 import IconMessageTextOutline from 'vue-material-design-icons/MessageTextOutline.vue'
 import IconThemeLightDark from 'vue-material-design-icons/ThemeLightDark.vue'
 import IconWeatherNight from 'vue-material-design-icons/WeatherNight.vue'
@@ -50,6 +53,22 @@ function cycleTheme() {
 const active = ref<Section>('chats')
 /** Media, documents and links of every conversation */
 const mediaOpen = ref(false)
+/** Asking before ending the session */
+const logoutOpen = ref(false)
+const loggingOut = ref(false)
+
+/**
+ * End the session: the app goes back to the login
+ */
+async function logout() {
+	loggingOut.value = true
+	try {
+		await window.TALK_DESKTOP.logout()
+	} finally {
+		loggingOut.value = false
+		logoutOpen.value = false
+	}
+}
 const unread = ref(0)
 const hasArchived = ref(false)
 
@@ -285,8 +304,31 @@ onBeforeUnmount(() => {
 				@click="openSettings">
 				<IconCogOutline :size="20" />
 			</button>
+			<button
+				class="nav-rail__item nav-rail__item--logout"
+				aria-label="Terminar sessão"
+				data-tooltip="Terminar sessão"
+				@mousedown.prevent
+				@click="logoutOpen = true">
+				<IconLogout :size="20" />
+			</button>
 		</div>
 		<MediaBrowser v-if="mediaOpen" @close="mediaOpen = false" />
+		<NcDialog
+			v-if="logoutOpen"
+			name="Terminar sessão?"
+			message="Vai sair da sua conta neste computador. Para voltar, terá de iniciar sessão outra vez."
+			size="small"
+			@update:open="logoutOpen = $event">
+			<template #actions>
+				<NcButton variant="tertiary" @click="logoutOpen = false">
+					Cancelar
+				</NcButton>
+				<NcButton variant="error" :disabled="loggingOut" @click="logout">
+					Terminar sessão
+				</NcButton>
+			</template>
+		</NcDialog>
 	</nav>
 </template>
 
@@ -432,5 +474,16 @@ onBeforeUnmount(() => {
 .nav-rail__item:focus-visible {
 	outline: 2px solid var(--tg-accent) !important;
 	outline-offset: 3px !important;
+}
+</style>
+
+<style scoped>
+/* Ending the session reads as such: red, with a red-tinted hover */
+.nav-rail__item--logout {
+	color: var(--tg-danger, #e5484d);
+}
+
+.nav-rail__item--logout:hover {
+	background: color-mix(in srgb, var(--tg-danger, #e5484d) 12%, var(--tg-card));
 }
 </style>
