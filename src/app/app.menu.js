@@ -17,18 +17,26 @@ const { increaseZoom, decreaseZoom, setZoom } = require('./zoom.service.ts')
  * @param {() => void} options.showMainWindow - Bring back the main window, re-creating it once closed
  */
 function setupMenu({ showMainWindow }) {
+	// app.name comes from the executable, where the ".ao" of "Talk Gov.ao" reads as a file
+	// extension and is dropped. The menus show the full name instead (app.name itself stays,
+	// the data folder and the stored credentials are keyed by it).
+	const name = process.env.NODE_ENV === 'development' ? app.name : BUILD_CONFIG.applicationName
+	if (isMac) {
+		app.setAboutPanelOptions({ applicationName: name })
+	}
+
 	const macAppMenu = {
-		label: app.name,
+		label: name,
 		submenu: [
-			{ role: 'about' },
+			{ role: 'about', label: `About ${name}` },
 			{ type: 'separator' },
 			{ role: 'services' },
 			{ type: 'separator' },
-			{ role: 'hide' },
+			{ role: 'hide', label: `Hide ${name}` },
 			{ role: 'hideOthers' },
 			{ role: 'unhide' },
 			{ type: 'separator' },
-			{ role: 'quit' },
+			{ role: 'quit', label: `Quit ${name}` },
 		],
 	}
 
@@ -95,7 +103,7 @@ function setupMenu({ showMainWindow }) {
 		{ type: 'separator' },
 		// Once the main window is closed the app keeps running: this brings it back,
 		// as the Dock icon does (macOS apps are expected to offer both)
-		{ label: app.name, accelerator: 'Command+1', click: () => showMainWindow() },
+		{ label: name, accelerator: 'Command+1', click: () => showMainWindow() },
 		{ type: 'separator' },
 		{ role: 'front' },
 		{ type: 'separator' },

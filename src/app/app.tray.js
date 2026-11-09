@@ -5,6 +5,7 @@
 
 const { app, Tray, Menu } = require('electron')
 const path = require('node:path')
+const { BUILD_CONFIG } = require('../shared/build.config.ts')
 const { getTrayIcon } = require('../shared/icons.utils.js')
 const { focusLockWindow } = require('./lock.service.ts')
 
@@ -35,7 +36,8 @@ function setupTray(browserWindow) {
 
 	const icon = path.resolve(__dirname, getTrayIcon())
 	const tray = new Tray(icon)
-	tray.setToolTip(app.name)
+	// app.name drops the ".ao" of the executable name, see app.menu.js
+	tray.setToolTip(process.env.NODE_ENV === 'development' ? app.name : BUILD_CONFIG.applicationName)
 	tray.setContextMenu(Menu.buildFromTemplate([
 		{
 			label: 'Open',
